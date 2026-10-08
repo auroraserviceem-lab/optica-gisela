@@ -167,63 +167,119 @@ export default function Experiencia() {
       </div>
 
       {isModalOpen && (
-        <div style={{
-          position: 'fixed',
-          top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(15, 19, 22, 0.95)',
-          zIndex: 9999,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '2rem'
-        }}>
+        <div 
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(10, 10, 10, 0.85)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1.5rem',
+            animation: 'modalFadeIn 0.3s ease-out'
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsModalOpen(false);
+          }}
+        >
+          {/* Close button */}
           <button 
             onClick={() => setIsModalOpen(false)}
             style={{
-              position: 'absolute', top: '20px', right: '20px',
-              background: 'none', border: 'none', color: '#fff', cursor: 'pointer'
+              position: 'absolute', top: '1.5rem', right: '1.5rem',
+              background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', 
+              color: '#fff', cursor: 'pointer', borderRadius: '50%', padding: '0.6rem', 
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'all 0.3s', zIndex: 10000
             }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.15)'; e.currentTarget.style.transform = 'scale(1.1)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.transform = 'scale(1)'; }}
           >
-            <X size={32} />
+            <X size={24} />
           </button>
           
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', maxWidth: '800px', flex: 1, position: 'relative' }}>
-            <button onClick={prevImage} style={{ position: 'absolute', left: 0, background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', cursor: 'pointer', padding: '0.5rem', borderRadius: '50%', zIndex: 1 }}>
-              <ChevronLeft size={32} />
-            </button>
+          {/* Main Card */}
+          <div style={{
+            background: '#121517',
+            border: '1px solid rgba(255,255,255,0.05)',
+            borderRadius: '24px',
+            padding: '1.5rem',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            maxWidth: '1000px',
+            width: '100%',
+            boxShadow: '0 24px 60px rgba(0,0,0,0.6)',
+            animation: 'modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
+          }}>
             
-            <img 
-              src={modalImages[currentIndex]} 
-              alt={`Galeria ${currentIndex + 1}`} 
-              style={{ maxHeight: '70vh', maxWidth: '100%', objectFit: 'contain', borderRadius: '8px', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }} 
-            />
-            
-            <button onClick={nextImage} style={{ position: 'absolute', right: 0, background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', cursor: 'pointer', padding: '0.5rem', borderRadius: '50%', zIndex: 1 }}>
-              <ChevronRight size={32} />
-            </button>
-          </div>
-          
-          {/* Thumbnails */}
-          <div style={{ display: 'flex', gap: '10px', marginTop: '1.5rem', overflowX: 'auto', paddingBottom: '10px', maxWidth: '100%' }}>
-            {modalImages.map((img, idx) => (
-              <img 
-                key={idx}
-                src={img}
-                alt={`Thumbnail ${idx + 1}`}
-                onClick={() => setCurrentIndex(idx)}
-                style={{
-                  width: '80px',
-                  height: '80px',
-                  objectFit: 'cover',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  border: currentIndex === idx ? `2px solid ${ACCENT}` : '2px solid transparent',
-                  opacity: currentIndex === idx ? 1 : 0.6,
-                  transition: 'all 0.3s ease'
+            {/* Image Container */}
+            <div style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '1.5rem' }}>
+              
+              <button onClick={prevImage} style={{
+                  position: 'absolute', left: '-15px', background: 'rgba(15,19,22,0.8)', border: `1px solid ${ACCENT}50`, color: ACCENT,
+                  cursor: 'pointer', padding: '0.6rem', borderRadius: '50%', zIndex: 1, backdropFilter: 'blur(4px)',
+                  transition: 'all 0.3s', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}
+                onMouseEnter={e => { e.currentTarget.style.background = ACCENT; e.currentTarget.style.color = '#fff'; e.currentTarget.style.transform = 'scale(1.1)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(15,19,22,0.8)'; e.currentTarget.style.color = ACCENT; e.currentTarget.style.transform = 'scale(1)'; }}
+              >
+                <ChevronLeft size={28} />
+              </button>
+              
+              <img 
+                src={modalImages[currentIndex]} 
+                alt={`Galería ${currentIndex + 1}`} 
+                style={{ 
+                  maxHeight: '65vh', 
+                  maxWidth: '100%', 
+                  objectFit: 'contain', 
+                  borderRadius: '16px', 
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+                  transition: 'opacity 0.3s ease'
+                }} 
               />
-            ))}
+              
+              <button onClick={nextImage} style={{
+                  position: 'absolute', right: '-15px', background: 'rgba(15,19,22,0.8)', border: `1px solid ${ACCENT}50`, color: ACCENT,
+                  cursor: 'pointer', padding: '0.6rem', borderRadius: '50%', zIndex: 1, backdropFilter: 'blur(4px)',
+                  transition: 'all 0.3s', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = ACCENT; e.currentTarget.style.color = '#fff'; e.currentTarget.style.transform = 'scale(1.1)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(15,19,22,0.8)'; e.currentTarget.style.color = ACCENT; e.currentTarget.style.transform = 'scale(1)'; }}
+              >
+                <ChevronRight size={28} />
+              </button>
+            </div>
+            
+            {/* Thumbnails */}
+            <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '0.5rem', maxWidth: '100%', scrollbarWidth: 'thin', scrollbarColor: `${ACCENT} transparent` }}>
+              {modalImages.map((img, idx) => (
+                <div key={idx} onClick={() => setCurrentIndex(idx)} style={{
+                  position: 'relative', width: '70px', height: '70px', flexShrink: 0, cursor: 'pointer',
+                  borderRadius: '12px', overflow: 'hidden',
+                  border: currentIndex === idx ? `2px solid ${ACCENT}` : '2px solid transparent',
+                  opacity: currentIndex === idx ? 1 : 0.5,
+                  transition: 'all 0.3s ease',
+                  transform: currentIndex === idx ? 'scale(1.05)' : 'scale(1)'
+                }}>
+                  <img 
+                    src={img}
+                    alt={`Miniatura ${idx + 1}`}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                  {currentIndex !== idx && (
+                    <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.2)', transition: 'background 0.3s' }} 
+                         onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0)'}
+                         onMouseLeave={e => e.currentTarget.style.background = 'rgba(0,0,0,0.2)'}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -231,6 +287,14 @@ export default function Experiencia() {
       <style>{`
         @media (max-width: 600px) {
           .gallery-grid { grid-template-columns: 1fr !important; }
+        }
+        @keyframes modalFadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes modalSlideUp {
+          from { opacity: 0; transform: translateY(30px) scale(0.95); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
         }
       `}</style>
     </section>
