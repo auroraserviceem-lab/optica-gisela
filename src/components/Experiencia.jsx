@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const ACCENT = '#E87008';
+
+const modalImages = [
+  'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791430666/c27dc5ab-6cf0-4c9b-8256-91fac0b539f3_y1tkgs.jpg',
+  'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791430666/0c21f7d5-fb60-4bdb-8c19-3373747aff58_ht6fqr.jpg',
+  'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791430667/02b1be74-ccea-4956-9fd8-f7b0dc79797b_qup1r5.jpg',
+  'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791430667/8bbaccb2-6be8-4619-8a4d-9fdb436bbb73_j5n9pr.jpg',
+  'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791430667/4e5ae6fa-000c-40c3-8279-42f3578ba38d_t2kmti.jpg'
+];
 
 const galleryItems = [
   {
@@ -112,6 +121,12 @@ function GalleryPhoto({ item }) {
 }
 
 export default function Experiencia() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const nextImage = () => setCurrentIndex((prev) => (prev + 1) % modalImages.length);
+  const prevImage = () => setCurrentIndex((prev) => (prev - 1 + modalImages.length) % modalImages.length);
+
   return (
     <section id="experiencia" style={{ background: '#0F1316', padding: '6rem 1.5rem', overflow: 'hidden' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
@@ -140,15 +155,78 @@ export default function Experiencia() {
           ))}
         </div>
 
-        {/* CTA (Decorativo) */}
+        {/* CTA (Decorativo) -> Ahora funcional */}
         <div style={{ textAlign: 'center' }}>
           <button className="gold-pill-btn" id="ver-galeria"
              type="button"
-             style={{ padding: '0.85rem 2.5rem', fontSize: '0.85rem', cursor: 'default' }}>
+             onClick={() => setIsModalOpen(true)}
+             style={{ padding: '0.85rem 2.5rem', fontSize: '0.85rem', cursor: 'pointer' }}>
             VER GALERÍA
           </button>
         </div>
       </div>
+
+      {isModalOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(15, 19, 22, 0.95)',
+          zIndex: 9999,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '2rem'
+        }}>
+          <button 
+            onClick={() => setIsModalOpen(false)}
+            style={{
+              position: 'absolute', top: '20px', right: '20px',
+              background: 'none', border: 'none', color: '#fff', cursor: 'pointer'
+            }}
+          >
+            <X size={32} />
+          </button>
+          
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', maxWidth: '800px', flex: 1, position: 'relative' }}>
+            <button onClick={prevImage} style={{ position: 'absolute', left: 0, background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', cursor: 'pointer', padding: '0.5rem', borderRadius: '50%', zIndex: 1 }}>
+              <ChevronLeft size={32} />
+            </button>
+            
+            <img 
+              src={modalImages[currentIndex]} 
+              alt={`Galeria ${currentIndex + 1}`} 
+              style={{ maxHeight: '70vh', maxWidth: '100%', objectFit: 'contain', borderRadius: '8px', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }} 
+            />
+            
+            <button onClick={nextImage} style={{ position: 'absolute', right: 0, background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', cursor: 'pointer', padding: '0.5rem', borderRadius: '50%', zIndex: 1 }}>
+              <ChevronRight size={32} />
+            </button>
+          </div>
+          
+          {/* Thumbnails */}
+          <div style={{ display: 'flex', gap: '10px', marginTop: '1.5rem', overflowX: 'auto', paddingBottom: '10px', maxWidth: '100%' }}>
+            {modalImages.map((img, idx) => (
+              <img 
+                key={idx}
+                src={img}
+                alt={`Thumbnail ${idx + 1}`}
+                onClick={() => setCurrentIndex(idx)}
+                style={{
+                  width: '80px',
+                  height: '80px',
+                  objectFit: 'cover',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  border: currentIndex === idx ? `2px solid ${ACCENT}` : '2px solid transparent',
+                  opacity: currentIndex === idx ? 1 : 0.6,
+                  transition: 'all 0.3s ease'
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       <style>{`
         @media (max-width: 600px) {
