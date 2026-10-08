@@ -255,29 +255,26 @@ export default function Experiencia() {
               </button>
             </div>
             
-            {/* Thumbnails */}
-            <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '0.5rem', maxWidth: '100%', scrollbarWidth: 'thin', scrollbarColor: `${ACCENT} transparent` }}>
-              {modalImages.map((img, idx) => (
-                <div key={idx} onClick={() => setCurrentIndex(idx)} style={{
-                  position: 'relative', width: '70px', height: '70px', flexShrink: 0, cursor: 'pointer',
-                  borderRadius: '12px', overflow: 'hidden',
-                  border: currentIndex === idx ? `2px solid ${ACCENT}` : '2px solid transparent',
-                  opacity: currentIndex === idx ? 1 : 0.5,
-                  transition: 'all 0.3s ease',
-                  transform: currentIndex === idx ? 'scale(1.05)' : 'scale(1)'
-                }}>
-                  <img 
-                    src={img}
-                    alt={`Miniatura ${idx + 1}`}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  />
-                  {currentIndex !== idx && (
-                    <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.2)', transition: 'background 0.3s' }} 
-                         onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0)'}
-                         onMouseLeave={e => e.currentTarget.style.background = 'rgba(0,0,0,0.2)'}
-                    />
-                  )}
-                </div>
+            {/* Pagination Dots */}
+            <div style={{ display: 'flex', gap: '8px', marginTop: '1rem' }}>
+              {modalImages.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentIndex(idx)}
+                  style={{
+                    width: currentIndex === idx ? '24px' : '8px',
+                    height: '8px',
+                    borderRadius: '4px',
+                    backgroundColor: currentIndex === idx ? ACCENT : 'rgba(255,255,255,0.3)',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    padding: 0
+                  }}
+                  onMouseEnter={e => { if(currentIndex !== idx) e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.6)'; }}
+                  onMouseLeave={e => { if(currentIndex !== idx) e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.3)'; }}
+                  aria-label={`Ir a la imagen ${idx + 1}`}
+                />
               ))}
             </div>
           </div>
