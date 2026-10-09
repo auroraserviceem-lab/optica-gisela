@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const ACCENT = '#E87008';
@@ -23,9 +23,9 @@ const originalDishes = [
     tag: 'Diseño',
     description: 'Armazón geométrico en azul petróleo con detalles naranja y patillas estampadas. Un diseño original, colorido y moderno para destacar tu estilo.',
     images: [
-      '/images/11.jpeg',
-      '/images/7.jpeg',
-      '/images/10.jpeg'
+      'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791575206/11_exsxh1.jpg',
+      'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791575206/7_w0tzfu.jpg',
+      'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791575206/10_fwqzpy.jpg'
     ]
   },
   {
@@ -105,6 +105,12 @@ const fullCatalogModels = [
   }
 ];
 
+const optimizeImageUrl = (url) => {
+  if (!url || !url.includes('cloudinary.com')) return url;
+  if (url.includes('/upload/f_auto')) return url;
+  return url.replace('/upload/', '/upload/f_auto,q_auto:best/');
+};
+
 function OriginalDishCard({ dish }) {
   const [hovered, setHovered] = useState(false);
 
@@ -132,7 +138,7 @@ function OriginalDishCard({ dish }) {
     >
       <div style={{ height: '312px', flexShrink: 0, overflow: 'hidden', position: 'relative' }}>
         <img
-          src={dish.img}
+          src={optimizeImageUrl(dish.img)}
           alt={dish.name}
           loading="lazy"
           decoding="async"
@@ -181,6 +187,21 @@ function OriginalDishCard({ dish }) {
 function CatalogModelCard({ model }) {
   const [hovered, setHovered] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [displayIndex, setDisplayIndex] = useState(0);
+  const [loadedImages, setLoadedImages] = useState({});
+
+  useEffect(() => {
+    if (loadedImages[currentIndex]) {
+      setDisplayIndex(currentIndex);
+    }
+  }, [currentIndex, loadedImages]);
+
+  const handleImageLoad = (idx) => {
+    setLoadedImages(prev => ({ ...prev, [idx]: true }));
+    if (idx === currentIndex) {
+      setDisplayIndex(idx);
+    }
+  };
 
   const nextImage = (e) => {
     e.stopPropagation();
@@ -210,7 +231,7 @@ function CatalogModelCard({ model }) {
       <div style={{ height: '312px', flexShrink: 0, overflow: 'hidden', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <button onClick={prevImage} style={{
             position: 'absolute', top: '50%', transform: 'translateY(-50%)', left: '10px', background: 'rgba(15,19,22,0.6)', border: `1px solid ${ACCENT}50`, color: ACCENT,
-            cursor: 'pointer', padding: '0.4rem', borderRadius: '50%', zIndex: 10, backdropFilter: 'blur(2px)', transition: 'all 0.3s',
+            cursor: 'pointer', padding: '0.4rem', borderRadius: '50%', zIndex: 20, backdropFilter: 'blur(2px)', transition: 'all 0.3s',
             display: 'flex', alignItems: 'center', justifyContent: 'center'
           }}
           onMouseEnter={e => { e.currentTarget.style.background = 'rgba(15,19,22,0.95)'; e.currentTarget.style.borderColor = ACCENT; }}
@@ -219,11 +240,38 @@ function CatalogModelCard({ model }) {
           <ChevronLeft size={20} />
         </button>
 
-        <img key={currentIndex} src={model.images[currentIndex]} alt={model.name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block', transition: 'transform 0.45s ease', transform: hovered ? 'scale(1.05)' : 'scale(1)', animation: 'imageFade 0.25s ease-out' }} />
+        {model.images.map((imgSrc, idx) => {
+          if (idx !== displayIndex && idx !== currentIndex && idx !== 0) return null;
+          const isVisible = idx === displayIndex;
+          return (
+            <img 
+              key={idx} 
+              src={optimizeImageUrl(imgSrc)} 
+              alt={`${model.name} - Vista ${idx + 1}`} 
+              loading={idx === 0 ? "eager" : "lazy"} 
+              fetchPriority={idx === 0 ? "high" : "auto"} 
+              onLoad={() => handleImageLoad(idx)}
+              style={{ 
+                position: 'absolute', inset: 0, width: '100%', height: '100%', 
+                objectFit: 'cover', objectPosition: 'center', display: 'block', 
+                opacity: isVisible ? 1 : 0,
+                transition: 'opacity 0.4s ease-in-out, transform 0.45s ease', 
+                transform: hovered && isVisible ? 'scale(1.05)' : 'scale(1)',
+                zIndex: isVisible ? 2 : 1 
+              }} 
+            />
+          );
+        })}
+
+        {currentIndex !== displayIndex && (
+          <div style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 15 }}>
+            <div style={{ width: '16px', height: '16px', border: `2px solid rgba(232,112,8,0.3)`, borderTop: `2px solid ${ACCENT}`, borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+          </div>
+        )}
         
         <button onClick={nextImage} style={{
             position: 'absolute', top: '50%', transform: 'translateY(-50%)', right: '10px', background: 'rgba(15,19,22,0.6)', border: `1px solid ${ACCENT}50`, color: ACCENT,
-            cursor: 'pointer', padding: '0.4rem', borderRadius: '50%', zIndex: 10, backdropFilter: 'blur(2px)', transition: 'all 0.3s',
+            cursor: 'pointer', padding: '0.4rem', borderRadius: '50%', zIndex: 20, backdropFilter: 'blur(2px)', transition: 'all 0.3s',
             display: 'flex', alignItems: 'center', justifyContent: 'center'
           }}
           onMouseEnter={e => { e.currentTarget.style.background = 'rgba(15,19,22,0.95)'; e.currentTarget.style.borderColor = ACCENT; }}
@@ -231,6 +279,20 @@ function CatalogModelCard({ model }) {
         >
           <ChevronRight size={20} />
         </button>
+
+        <div style={{ position: 'absolute', bottom: '15px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '8px', zIndex: 15 }}>
+          {model.images.map((_, idx) => (
+            <div
+              key={idx}
+              onClick={(e) => { e.stopPropagation(); setCurrentIndex(idx); }}
+              style={{
+                width: '8px', height: '8px', borderRadius: '50%',
+                background: currentIndex === idx ? ACCENT : 'rgba(255,255,255,0.4)',
+                cursor: 'pointer', transition: 'background 0.3s ease'
+              }}
+            />
+          ))}
+        </div>
 
         <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to top, rgba(232,112,8,0.15), transparent)`, opacity: hovered ? 1 : 0, transition: 'opacity 0.35s ease', pointerEvents: 'none', zIndex: 5 }} />
       </div>
@@ -263,8 +325,23 @@ const extraImages = [
 ];
 
 function ExtraGalleryCard({ images }) {
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [hovered, setHovered] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [displayIndex, setDisplayIndex] = useState(0);
+  const [loadedImages, setLoadedImages] = useState({});
+
+  useEffect(() => {
+    if (loadedImages[currentIndex]) {
+      setDisplayIndex(currentIndex);
+    }
+  }, [currentIndex, loadedImages]);
+
+  const handleImageLoad = (idx) => {
+    setLoadedImages(prev => ({ ...prev, [idx]: true }));
+    if (idx === currentIndex) {
+      setDisplayIndex(idx);
+    }
+  };
 
   const nextImage = (e) => {
     e.stopPropagation();
@@ -278,6 +355,7 @@ function ExtraGalleryCard({ images }) {
 
   return (
     <div
+      className="extra-gallery-card"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -292,7 +370,7 @@ function ExtraGalleryCard({ images }) {
       <div style={{ height: '100%', width: '100%', flexShrink: 0, overflow: 'hidden', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <button onClick={prevImage} style={{
             position: 'absolute', top: '50%', transform: 'translateY(-50%)', left: '15px', background: 'rgba(15,19,22,0.8)', border: `1px solid ${ACCENT}50`, color: ACCENT,
-            cursor: 'pointer', padding: '0.6rem', borderRadius: '50%', zIndex: 10, backdropFilter: 'blur(4px)', transition: 'all 0.3s',
+            cursor: 'pointer', padding: '0.6rem', borderRadius: '50%', zIndex: 20, backdropFilter: 'blur(4px)', transition: 'all 0.3s',
             display: 'flex', alignItems: 'center', justifyContent: 'center'
           }}
           onMouseEnter={e => { e.currentTarget.style.background = 'rgba(15,19,22,1)'; e.currentTarget.style.borderColor = ACCENT; }}
@@ -301,11 +379,38 @@ function ExtraGalleryCard({ images }) {
           <ChevronLeft size={28} />
         </button>
 
-        <img key={currentIndex} src={images[currentIndex]} alt="Más modelos y accesorios" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block', animation: 'imageFade 0.25s ease-out' }} />
+        {images.map((imgSrc, idx) => {
+          if (idx !== displayIndex && idx !== currentIndex && idx !== 0) return null;
+          const isVisible = idx === displayIndex;
+          return (
+            <img 
+              key={idx} 
+              className="extra-gallery-image"
+              src={optimizeImageUrl(imgSrc)} 
+              alt="Más modelos y accesorios" 
+              loading={idx === 0 ? "eager" : "lazy"} 
+              fetchPriority={idx === 0 ? "high" : "auto"} 
+              onLoad={() => handleImageLoad(idx)}
+              style={{ 
+                position: 'absolute', inset: 0, width: '100%', height: '100%', 
+                objectFit: 'cover', objectPosition: 'center', display: 'block', 
+                opacity: isVisible ? 1 : 0,
+                transition: 'opacity 0.4s ease-in-out', 
+                zIndex: isVisible ? 2 : 1 
+              }} 
+            />
+          );
+        })}
+
+        {currentIndex !== displayIndex && (
+          <div style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 15 }}>
+            <div style={{ width: '20px', height: '20px', border: `2px solid rgba(232,112,8,0.3)`, borderTop: `2px solid ${ACCENT}`, borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+          </div>
+        )}
         
         <button onClick={nextImage} style={{
             position: 'absolute', top: '50%', transform: 'translateY(-50%)', right: '15px', background: 'rgba(15,19,22,0.8)', border: `1px solid ${ACCENT}50`, color: ACCENT,
-            cursor: 'pointer', padding: '0.6rem', borderRadius: '50%', zIndex: 10, backdropFilter: 'blur(4px)', transition: 'all 0.3s',
+            cursor: 'pointer', padding: '0.6rem', borderRadius: '50%', zIndex: 20, backdropFilter: 'blur(4px)', transition: 'all 0.3s',
             display: 'flex', alignItems: 'center', justifyContent: 'center'
           }}
           onMouseEnter={e => { e.currentTarget.style.background = 'rgba(15,19,22,1)'; e.currentTarget.style.borderColor = ACCENT; }}
@@ -336,6 +441,38 @@ function ExtraGalleryCard({ images }) {
 
 export default function MenuDestacado() {
   const [isFullCatalogOpen, setIsFullCatalogOpen] = useState(false);
+  const [isFullCatalogLoading, setIsFullCatalogLoading] = useState(false);
+
+  const handleOpenCatalog = () => {
+    if (isFullCatalogOpen) {
+      setIsFullCatalogOpen(false);
+      return;
+    }
+    
+    setIsFullCatalogLoading(true);
+    const imagesToPreload = fullCatalogModels.map(m => optimizeImageUrl(m.images[0]));
+    let loadedCount = 0;
+    
+    if (imagesToPreload.length === 0) {
+      setIsFullCatalogLoading(false);
+      setIsFullCatalogOpen(true);
+      return;
+    }
+    
+    imagesToPreload.forEach(src => {
+      const img = new Image();
+      const checkDone = () => {
+        loadedCount++;
+        if (loadedCount === imagesToPreload.length) {
+          setIsFullCatalogLoading(false);
+          setIsFullCatalogOpen(true);
+        }
+      };
+      img.onload = checkDone;
+      img.onerror = checkDone;
+      img.src = src;
+    });
+  };
 
   return (
     <section id="menu" style={{ background: '#0F1316', padding: '7rem 1.5rem', position: 'relative', overflow: 'hidden' }}>
@@ -397,9 +534,10 @@ export default function MenuDestacado() {
             className="gold-pill-btn" 
             id="ver-menu-completo"
             type="button"
-            onClick={() => setIsFullCatalogOpen(!isFullCatalogOpen)}
-            style={{ padding: '0.9rem 2.8rem', fontSize: '0.85rem', letterSpacing: '0.12em', cursor: 'pointer' }}>
-            {isFullCatalogOpen ? 'OCULTAR CATÁLOGO COMPLETO' : 'VER CATÁLOGO COMPLETO'}
+            onClick={handleOpenCatalog}
+            disabled={isFullCatalogLoading}
+            style={{ padding: '0.9rem 2.8rem', fontSize: '0.85rem', letterSpacing: '0.12em', cursor: isFullCatalogLoading ? 'wait' : 'pointer', opacity: isFullCatalogLoading ? 0.7 : 1 }}>
+            {isFullCatalogLoading ? 'CARGANDO...' : (isFullCatalogOpen ? 'OCULTAR CATÁLOGO COMPLETO' : 'VER CATÁLOGO COMPLETO')}
           </button>
         </div>
       </div>
@@ -414,8 +552,16 @@ export default function MenuDestacado() {
           .catalog-centered-card { width: 100% !important; }
         }
         .catalog-centered-card { width: calc((100% - 3.2rem) / 3); }
+        @media (max-width: 768px) {
+          .extra-gallery-card { height: 350px !important; }
+          .extra-gallery-image { object-fit: contain !important; }
+        }
         @keyframes modalFadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes imageFade { from { opacity: 0.5; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
       `}</style>
     </section>
   );
