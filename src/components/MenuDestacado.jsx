@@ -241,7 +241,6 @@ function CatalogModelCard({ model }) {
         </button>
 
         {model.images.map((imgSrc, idx) => {
-          if (idx !== displayIndex && idx !== currentIndex && idx !== 0) return null;
           const isVisible = idx === displayIndex;
           return (
             <img 
@@ -262,12 +261,6 @@ function CatalogModelCard({ model }) {
             />
           );
         })}
-
-        {currentIndex !== displayIndex && (
-          <div style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 15 }}>
-            <div style={{ width: '16px', height: '16px', border: `2px solid rgba(232,112,8,0.3)`, borderTop: `2px solid ${ACCENT}`, borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-          </div>
-        )}
         
         <button onClick={nextImage} style={{
             position: 'absolute', top: '50%', transform: 'translateY(-50%)', right: '10px', background: 'rgba(15,19,22,0.6)', border: `1px solid ${ACCENT}50`, color: ACCENT,
@@ -366,7 +359,11 @@ function ExtraGalleryCard({ images }) {
         position: 'relative', display: 'flex', flexDirection: 'column', height: '600px', width: '100%', maxWidth: '900px', margin: '0 auto'
       }}
     >
-      <div style={{ height: '100%', width: '100%', flexShrink: 0, overflow: 'hidden', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="extra-gallery-wrapper" style={{ height: '100%', width: '100%', flexShrink: 0, overflow: 'hidden', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        
+        {/* Invisible image to naturally dictate the aspect ratio on mobile without forcing a fixed square */}
+        <img src={optimizeImageUrl(images[0])} alt="" style={{ width: '100%', height: 'auto', visibility: 'hidden', display: 'block' }} className="extra-gallery-dummy" />
+
         <button onClick={prevImage} style={{
             position: 'absolute', top: '50%', transform: 'translateY(-50%)', left: '15px', background: 'rgba(15,19,22,0.8)', border: `1px solid ${ACCENT}50`, color: ACCENT,
             cursor: 'pointer', padding: '0.6rem', borderRadius: '50%', zIndex: 20, backdropFilter: 'blur(4px)', transition: 'all 0.3s',
@@ -379,7 +376,6 @@ function ExtraGalleryCard({ images }) {
         </button>
 
         {images.map((imgSrc, idx) => {
-          if (idx !== displayIndex && idx !== currentIndex && idx !== 0) return null;
           const isVisible = idx === displayIndex;
           return (
             <img 
@@ -400,12 +396,6 @@ function ExtraGalleryCard({ images }) {
             />
           );
         })}
-
-        {currentIndex !== displayIndex && (
-          <div style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 15 }}>
-            <div style={{ width: '20px', height: '20px', border: `2px solid rgba(232,112,8,0.3)`, borderTop: `2px solid ${ACCENT}`, borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-          </div>
-        )}
         
         <button onClick={nextImage} style={{
             position: 'absolute', top: '50%', transform: 'translateY(-50%)', right: '15px', background: 'rgba(15,19,22,0.8)', border: `1px solid ${ACCENT}50`, color: ACCENT,
@@ -440,37 +430,21 @@ function ExtraGalleryCard({ images }) {
 
 export default function MenuDestacado() {
   const [isFullCatalogOpen, setIsFullCatalogOpen] = useState(false);
-  const [isFullCatalogLoading, setIsFullCatalogLoading] = useState(false);
-
-  const handleOpenCatalog = () => {
-    if (isFullCatalogOpen) {
-      setIsFullCatalogOpen(false);
-      return;
-    }
-    
-    setIsFullCatalogLoading(true);
-    const imagesToPreload = fullCatalogModels.map(m => optimizeImageUrl(m.images[0]));
-    let loadedCount = 0;
-    
-    if (imagesToPreload.length === 0) {
-      setIsFullCatalogLoading(false);
-      setIsFullCatalogOpen(true);
-      return;
-    }
+  useEffect(() => {
+    const imagesToPreload = [
+      ...originalDishes.filter(d => d.images).map(m => m.images[0]),
+      ...fullCatalogModels.map(m => m.images[0]),
+      ...extraImages
+    ].map(optimizeImageUrl);
     
     imagesToPreload.forEach(src => {
       const img = new Image();
-      const checkDone = () => {
-        loadedCount++;
-        if (loadedCount === imagesToPreload.length) {
-          setIsFullCatalogLoading(false);
-          setIsFullCatalogOpen(true);
-        }
-      };
-      img.onload = checkDone;
-      img.onerror = checkDone;
       img.src = src;
     });
+  }, []);
+
+  const handleOpenCatalog = () => {
+    setIsFullCatalogOpen(!isFullCatalogOpen);
   };
 
   return (
@@ -534,9 +508,8 @@ export default function MenuDestacado() {
             id="ver-menu-completo"
             type="button"
             onClick={handleOpenCatalog}
-            disabled={isFullCatalogLoading}
-            style={{ padding: '0.9rem 2.8rem', fontSize: '0.85rem', letterSpacing: '0.12em', cursor: isFullCatalogLoading ? 'wait' : 'pointer', opacity: isFullCatalogLoading ? 0.7 : 1 }}>
-            {isFullCatalogLoading ? 'CARGANDO...' : (isFullCatalogOpen ? 'OCULTAR CATÁLOGO COMPLETO' : 'VER CATÁLOGO COMPLETO')}
+            style={{ padding: '0.9rem 2.8rem', fontSize: '0.85rem', letterSpacing: '0.12em', cursor: 'pointer' }}>
+            {isFullCatalogOpen ? 'OCULTAR CATÁLOGO COMPLETO' : 'VER CATÁLOGO COMPLETO'}
           </button>
         </div>
       </div>
@@ -551,12 +524,20 @@ export default function MenuDestacado() {
           .catalog-centered-card { width: 100% !important; }
         }
         .catalog-centered-card { width: calc((100% - 3.2rem) / 3); }
+        .extra-gallery-dummy { display: none !important; }
         @media (max-width: 768px) {
           .extra-gallery-card { 
-            height: auto !important; 
-            aspect-ratio: 1 / 1 !important;
-            max-height: 450px !important;
+            height: auto !important;
+            aspect-ratio: auto !important;
+            max-height: none !important;
             width: 100% !important;
+            background: #0F1316 !important;
+          }
+          .extra-gallery-wrapper {
+            height: auto !important;
+          }
+          .extra-gallery-dummy {
+            display: block !important;
           }
           .extra-gallery-image { object-fit: contain !important; }
         }
