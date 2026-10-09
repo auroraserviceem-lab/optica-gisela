@@ -317,11 +317,10 @@ function CatalogModelCard({ model }) {
 }
 
 const extraImages = [
-  'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791571885/18_wc61wp.jpg',
-  'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791571885/17_dzdlzx.jpg',
-  'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791571889/19_umvuwm.jpg',
-  'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791571890/2_r0xjio.jpg',
-  'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791571959/4_casdcn.png'
+  'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791576087/2_w8gmaa.jpg',
+  'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791576089/3_tv9h19.jpg',
+  'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791576076/5_m9mvl5.jpg',
+  'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791576077/6_otcq5m.jpg'
 ];
 
 function ExtraGalleryCard({ images }) {
@@ -553,7 +552,12 @@ export default function MenuDestacado() {
         }
         .catalog-centered-card { width: calc((100% - 3.2rem) / 3); }
         @media (max-width: 768px) {
-          .extra-gallery-card { height: 350px !important; }
+          .extra-gallery-card { 
+            height: auto !important; 
+            aspect-ratio: 1 / 1 !important;
+            max-height: 450px !important;
+            width: 100% !important;
+          }
           .extra-gallery-image { object-fit: contain !important; }
         }
         @keyframes modalFadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
