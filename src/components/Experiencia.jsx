@@ -216,12 +216,12 @@ export default function Experiencia() {
             <div style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '1.5rem' }}>
               
               <button onClick={prevImage} style={{
-                  position: 'absolute', left: '-15px', background: 'rgba(15,19,22,0.8)', border: `1px solid ${ACCENT}50`, color: ACCENT,
+                  position: 'absolute', top: '50%', transform: 'translateY(-50%)', left: '-15px', background: 'rgba(15,19,22,0.8)', border: `1px solid ${ACCENT}50`, color: ACCENT,
                   cursor: 'pointer', padding: '0.6rem', borderRadius: '50%', zIndex: 1, backdropFilter: 'blur(4px)',
                   transition: 'all 0.3s', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}
-                onMouseEnter={e => { e.currentTarget.style.background = ACCENT; e.currentTarget.style.color = '#fff'; e.currentTarget.style.transform = 'scale(1.1)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(15,19,22,0.8)'; e.currentTarget.style.color = ACCENT; e.currentTarget.style.transform = 'scale(1)'; }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(15,19,22,1)'; e.currentTarget.style.borderColor = ACCENT; e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(15,19,22,0.8)'; e.currentTarget.style.borderColor = `${ACCENT}50`; e.currentTarget.style.transform = 'translateY(-50%) scale(1)'; }}
               >
                 <ChevronLeft size={28} />
               </button>
@@ -234,12 +234,12 @@ export default function Experiencia() {
               />
               
               <button onClick={nextImage} style={{
-                  position: 'absolute', right: '-15px', background: 'rgba(15,19,22,0.8)', border: `1px solid ${ACCENT}50`, color: ACCENT,
+                  position: 'absolute', top: '50%', transform: 'translateY(-50%)', right: '-15px', background: 'rgba(15,19,22,0.8)', border: `1px solid ${ACCENT}50`, color: ACCENT,
                   cursor: 'pointer', padding: '0.6rem', borderRadius: '50%', zIndex: 1, backdropFilter: 'blur(4px)',
                   transition: 'all 0.3s', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}
-                onMouseEnter={e => { e.currentTarget.style.background = ACCENT; e.currentTarget.style.color = '#fff'; e.currentTarget.style.transform = 'scale(1.1)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(15,19,22,0.8)'; e.currentTarget.style.color = ACCENT; e.currentTarget.style.transform = 'scale(1)'; }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(15,19,22,1)'; e.currentTarget.style.borderColor = ACCENT; e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(15,19,22,0.8)'; e.currentTarget.style.borderColor = `${ACCENT}50`; e.currentTarget.style.transform = 'translateY(-50%) scale(1)'; }}
               >
                 <ChevronRight size={28} />
               </button>
