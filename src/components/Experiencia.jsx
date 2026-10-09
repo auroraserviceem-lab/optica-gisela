@@ -124,8 +124,15 @@ export default function Experiencia() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const nextImage = () => setCurrentIndex((prev) => (prev + 1) % modalImages.length);
-  const prevImage = () => setCurrentIndex((prev) => (prev - 1 + modalImages.length) % modalImages.length);
+  const nextImage = (e) => {
+    e.stopPropagation();
+    setCurrentIndex((prev) => (prev + 1) % modalImages.length);
+  };
+  
+  const prevImage = (e) => {
+    e.stopPropagation();
+    setCurrentIndex((prev) => (prev - 1 + modalImages.length) % modalImages.length);
+  };
 
   return (
     <section id="experiencia" style={{ background: '#0F1316', padding: '6rem 1.5rem', overflow: 'hidden' }}>
@@ -190,31 +197,20 @@ export default function Experiencia() {
             onClick={() => setIsModalOpen(false)}
             style={{
               position: 'absolute', top: '1.5rem', right: '1.5rem',
-              background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', 
-              color: '#fff', cursor: 'pointer', borderRadius: '50%', padding: '0.6rem', 
+              background: 'rgba(15,19,22,0.8)', border: `1px solid ${ACCENT}50`, 
+              color: ACCENT, cursor: 'pointer', borderRadius: '50%', padding: '0.6rem', 
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              transition: 'all 0.3s', zIndex: 10000
+              transition: 'all 0.3s', zIndex: 10000, backdropFilter: 'blur(4px)',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.15)'; e.currentTarget.style.transform = 'scale(1.1)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.transform = 'scale(1)'; }}
+            onMouseEnter={e => { e.currentTarget.style.background = ACCENT; e.currentTarget.style.color = '#fff'; e.currentTarget.style.transform = 'scale(1.1)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(15,19,22,0.8)'; e.currentTarget.style.color = ACCENT; e.currentTarget.style.transform = 'scale(1)'; }}
           >
             <X size={24} />
           </button>
           
           {/* Main Card */}
-          <div style={{
-            background: '#121517',
-            border: '1px solid rgba(255,255,255,0.05)',
-            borderRadius: '24px',
-            padding: '1.5rem',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            maxWidth: '1000px',
-            width: '100%',
-            boxShadow: '0 24px 60px rgba(0,0,0,0.6)',
-            animation: 'modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
-          }}>
+          <div className="modal-card">
             
             {/* Image Container */}
             <div style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '1.5rem' }}>
@@ -231,16 +227,10 @@ export default function Experiencia() {
               </button>
               
               <img 
+                key={currentIndex}
                 src={modalImages[currentIndex]} 
                 alt={`Galería ${currentIndex + 1}`} 
-                style={{ 
-                  maxHeight: '65vh', 
-                  maxWidth: '100%', 
-                  objectFit: 'contain', 
-                  borderRadius: '16px', 
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
-                  transition: 'opacity 0.3s ease'
-                }} 
+                className="modal-main-image"
               />
               
               <button onClick={nextImage} style={{
@@ -256,11 +246,11 @@ export default function Experiencia() {
             </div>
             
             {/* Pagination Dots */}
-            <div style={{ display: 'flex', gap: '8px', marginTop: '1rem' }}>
+            <div style={{ display: 'flex', gap: '8px', marginTop: '0.5rem' }}>
               {modalImages.map((_, idx) => (
                 <button
                   key={idx}
-                  onClick={() => setCurrentIndex(idx)}
+                  onClick={(e) => { e.stopPropagation(); setCurrentIndex(idx); }}
                   style={{
                     width: currentIndex === idx ? '24px' : '8px',
                     height: '8px',
@@ -285,13 +275,52 @@ export default function Experiencia() {
         @media (max-width: 600px) {
           .gallery-grid { grid-template-columns: 1fr !important; }
         }
+        
+        .modal-card {
+          background: #121517;
+          border: 1px solid rgba(255,255,255,0.05);
+          border-radius: 24px;
+          padding: 1.5rem;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          width: 92%;
+          box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+          animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .modal-main-image {
+          max-height: 70vh;
+          width: 100%;
+          object-fit: contain;
+          border-radius: 16px;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+          animation: imageFade 0.25s ease-out;
+        }
+
+        @media (min-width: 768px) {
+          .modal-card {
+            width: 60%;
+            max-width: 1200px;
+          }
+          .modal-main-image {
+            max-height: 80vh;
+          }
+        }
+
         @keyframes modalFadeIn {
           from { opacity: 0; }
           to { opacity: 1; }
         }
+        
         @keyframes modalSlideUp {
           from { opacity: 0; transform: translateY(30px) scale(0.95); }
           to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        
+        @keyframes imageFade {
+          from { opacity: 0.5; transform: scale(0.98); }
+          to { opacity: 1; transform: scale(1); }
         }
       `}</style>
     </section>
