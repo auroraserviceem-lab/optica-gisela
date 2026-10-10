@@ -107,6 +107,17 @@ export default function Footer() {
           <span style={{ color: `rgba(255,255,255,0.15)`, margin: '0 0.5rem' }}>|</span>
           López y Planes 4638, Santa Fe, Argentina
         </p>
+
+        {/* Developer Banner */}
+        <div style={{
+          marginTop: '1rem',
+          textAlign: 'center',
+          fontSize: '0.65rem',
+          color: 'rgba(255,255,255,0.4)',
+          letterSpacing: '0.05em'
+        }}>
+          Desarrollado por Services Aurora · <a href="https://servicesaurora.com" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>servicesaurora.com</a>
+        </div>
       </div>
     </footer>
   );
