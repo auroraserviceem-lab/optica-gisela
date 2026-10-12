@@ -139,7 +139,7 @@ function OriginalDishCard({ dish }) {
       <div style={{ height: '312px', flexShrink: 0, overflow: 'hidden', position: 'relative' }}>
         <img
           src={optimizeImageUrl(dish.img)}
-          alt={dish.name}
+          alt={`${dish.name} - Anteojos en Óptica Gisela Santa Fe`}
           loading="lazy"
           decoding="async"
           style={{
@@ -246,7 +246,7 @@ function CatalogModelCard({ model }) {
             <img 
               key={idx} 
               src={optimizeImageUrl(imgSrc)} 
-              alt={`${model.name} - Vista ${idx + 1}`} 
+              alt={`${model.name} - Anteojos en Óptica Gisela Santa Fe - Vista ${idx + 1}`} 
               loading={idx === 0 ? "eager" : "lazy"} 
               fetchPriority={idx === 0 ? "high" : "auto"} 
               onLoad={() => handleImageLoad(idx)}
@@ -382,7 +382,7 @@ function ExtraGalleryCard({ images }) {
               key={idx} 
               className="extra-gallery-image"
               src={optimizeImageUrl(imgSrc)} 
-              alt="Más modelos y accesorios" 
+              alt={`Más modelos y accesorios de anteojos - Óptica Gisela Santa Fe - Vista ${idx + 1}`} 
               loading={idx === 0 ? "eager" : "lazy"} 
               fetchPriority={idx === 0 ? "high" : "auto"} 
               onLoad={() => handleImageLoad(idx)}

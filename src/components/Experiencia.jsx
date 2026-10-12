@@ -15,37 +15,37 @@ const galleryItems = [
   {
     id: 'video-1',
     video: 'https://res.cloudinary.com/dkc39tw6r/video/upload/f_auto,q_auto/v1789439572/optica.gisela_Modelitos_clipon_disponibles__todos_con_cristales_polarizado_2023-11-17_CzwD37UucNz_3238105169488626547_sajxd3.mp4',
-    alt: 'Óptica Gisela Modelos Clip On',
+    alt: 'Óptica Gisela en Santa Fe - Modelos Clip On con cristales polarizados',
     aspectRatio: '4/3',
   },
   {
     id: 'video-2',
     video: 'https://res.cloudinary.com/dkc39tw6r/video/upload/f_auto,q_auto/v1789521362/optica.gisela_2023-09-21_CxdS-H9OdiQ_3196794744491071632_w7kyhi.mp4',
-    alt: 'Óptica Gisela Nueva Temporada',
+    alt: 'Óptica Gisela en Santa Fe - Nueva Temporada de anteojos recetados y de sol',
     aspectRatio: '4/3',
   },
   {
     id: 'img-3',
     img: 'https://res.cloudinary.com/dkc39tw6r/image/upload/f_auto,q_auto/v1789522777/7d6a51ae-ee62-4e73-ac10-b48121be8a72_amnr8i.jpg',
-    alt: 'Óptica Gisela Colección de Armazones',
+    alt: 'Óptica Gisela en Santa Fe - Colección de armazones modernos',
     aspectRatio: '3/4',
   },
   {
     id: 'img-4',
     img: 'https://res.cloudinary.com/dkc39tw6r/image/upload/f_auto,q_auto/v1789440100/R6CSH_aehpe3.jpg',
-    alt: 'Óptica Gisela Diseños Modernos',
+    alt: 'Óptica Gisela en Santa Fe - Diseños modernos en salud visual',
     aspectRatio: '3/4',
   },
   {
     id: 'img-5',
     img: 'https://res.cloudinary.com/dkc39tw6r/image/upload/f_auto,q_auto/v1789440213/BpiDf_ancozj.jpg',
-    alt: 'Óptica Gisela Tendencias',
+    alt: 'Óptica Gisela en Santa Fe - Tendencias en anteojos de diseño',
     aspectRatio: '3/4',
   },
   {
     id: 'img-6',
     img: 'https://res.cloudinary.com/dkc39tw6r/image/upload/f_auto,q_auto/v1789440302/g5Pqe_pugxku.jpg',
-    alt: 'Óptica Gisela Anteojos de Sol',
+    alt: 'Óptica Gisela en Santa Fe - Anteojos de sol con protección UV',
     aspectRatio: '3/4',
   },
 ];
@@ -229,7 +229,7 @@ export default function Experiencia() {
               <img 
                 key={currentIndex}
                 src={modalImages[currentIndex]} 
-                alt={`Galería ${currentIndex + 1}`} 
+                alt={`Óptica Gisela Santa Fe - Experiencia y galería de anteojos ${currentIndex + 1}`} 
                 className="modal-main-image"
               />
               

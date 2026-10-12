@@ -103,7 +103,7 @@ function EventCard({ event }) {
       }}>
         <img
           src={event.img}
-          alt={event.title}
+          alt={`${event.title} - Óptica Gisela Santa Fe`}
           style={{
             width: '100%',
             height: '100%',

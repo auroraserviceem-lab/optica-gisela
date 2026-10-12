@@ -59,7 +59,7 @@ export default function Hero({ onReserve }) {
               <source media="(max-width: 768px)" srcSet={slide.mobile} />
               <img
                 src={slide.desktop}
-                alt={`Óptica Gisela Hero Slide ${index + 1}`}
+                alt={`Óptica Gisela en Santa Fe - Anteojos de sol, recetados y salud visual - Imagen ${index + 1}`}
                 className="hero-slide-img"
                 loading={index === 0 ? 'eager' : 'lazy'}
                 fetchpriority={index === 0 ? 'high' : 'auto'}

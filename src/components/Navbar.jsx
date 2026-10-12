@@ -60,7 +60,7 @@ export default function Navbar({ onReserve }) {
              aria-label="Óptica Gisela - Inicio">
             <img
               src="https://res.cloudinary.com/dkc39tw6r/image/upload/f_auto,q_auto/v1789432276/715455875_18414692269197629_5872524684382421791_n_u1sti6.jpg"
-              alt="Óptica Gisela Logo"
+              alt="Óptica Gisela - Óptica en Santa Fe Logo"
               decoding="async"
               style={{ height: '52px', width: '52px', borderRadius: '50%', objectFit: 'cover', border: `1.5px solid ${ACCENT}` }}
             />

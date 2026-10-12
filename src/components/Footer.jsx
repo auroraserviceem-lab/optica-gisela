@@ -57,7 +57,7 @@ export default function Footer() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
           <img
             src="https://res.cloudinary.com/dkc39tw6r/image/upload/f_auto,q_auto/v1789432276/715455875_18414692269197629_5872524684382421791_n_u1sti6.jpg"
-            alt="Óptica Gisela Logo"
+            alt="Óptica Gisela - Óptica en Santa Fe Logo"
             loading="lazy"
             decoding="async"
             style={{ height: '48px', width: '48px', borderRadius: '50%', objectFit: 'cover', border: `1.5px solid ${ACCENT}` }}

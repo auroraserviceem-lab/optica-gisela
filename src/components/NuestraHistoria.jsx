@@ -112,7 +112,7 @@ export default function NuestraHistoria() {
           >
             <img
               src={BIENVENIDOS_IMG}
-              alt="Óptica Gisela — Santa Fe"
+              alt="Óptica Gisela - Óptica en Santa Fe Capital, atención personalizada y salud visual"
               loading="lazy"
               decoding="async"
               style={{
