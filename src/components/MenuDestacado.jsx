@@ -1,7 +1,34 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const ACCENT = '#E87008';
+
+function useNearViewport(ref, rootMargin = '300px 0px') {
+  const [isNear, setIsNear] = useState(false);
+
+  useEffect(() => {
+    if (!ref.current) return;
+    if (typeof window === 'undefined' || !('IntersectionObserver' in window)) {
+      setIsNear(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsNear(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin }
+    );
+
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [ref, rootMargin]);
+
+  return isNear;
+}
 
 const originalDishes = [
   {
@@ -111,11 +138,15 @@ const optimizeImageUrl = (url) => {
   return url.replace('/upload/', '/upload/f_auto,q_auto:best/');
 };
 
-function OriginalDishCard({ dish }) {
+const OriginalDishCard = React.memo(function OriginalDishCard({ dish }) {
+  const cardRef = useRef(null);
+  const isNearViewport = useNearViewport(cardRef, '350px 0px');
   const [hovered, setHovered] = useState(false);
 
   return (
     <div
+      ref={cardRef}
+      className="catalog-model-card"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -134,19 +165,30 @@ function OriginalDishCard({ dish }) {
         height: '520px',
         display: 'flex',
         flexDirection: 'column',
+        contain: 'layout paint',
       }}
     >
-      <div style={{ height: '312px', flexShrink: 0, overflow: 'hidden', position: 'relative' }}>
-        <img
-          src={optimizeImageUrl(dish.img)}
-          alt={`${dish.name} - Anteojos en Óptica Gisela Santa Fe`}
-          loading="lazy"
-          decoding="async"
-          style={{
-            width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block',
-            transition: 'transform 0.45s ease', transform: hovered ? 'scale(1.05)' : 'scale(1)',
-          }}
-        />
+      <div 
+        className="catalog-image-container"
+        style={{ 
+          height: '312px', flexShrink: 0, overflow: 'hidden', position: 'relative',
+          backgroundColor: '#181F25',
+          contain: 'strict'
+        }}
+      >
+        {isNearViewport && (
+          <img
+            src={optimizeImageUrl(dish.img)}
+            alt={`${dish.name} - Anteojos en Óptica Gisela Santa Fe`}
+            loading="lazy"
+            decoding="async"
+            style={{
+              width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block',
+              transition: 'transform 0.45s ease', transform: hovered ? 'scale(1.05)' : 'scale(1)',
+              pointerEvents: 'none'
+            }}
+          />
+        )}
         <div style={{
           position: 'absolute', inset: 0,
           background: `linear-gradient(to top, rgba(232,112,8,0.15), transparent)`,
@@ -182,34 +224,49 @@ function OriginalDishCard({ dish }) {
       </div>
     </div>
   );
-}
+});
 
-function CatalogModelCard({ model }) {
+const CatalogModelCard = React.memo(function CatalogModelCard({ model }) {
+  const cardRef = useRef(null);
+  const isNearViewport = useNearViewport(cardRef, '350px 0px');
   const [hovered, setHovered] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [displayIndex, setDisplayIndex] = useState(0);
-  const [loadedImages, setLoadedImages] = useState({});
+  const [renderedIndices, setRenderedIndices] = useState(() => new Set([0]));
 
   useEffect(() => {
-    if (loadedImages[currentIndex]) {
-      setDisplayIndex(currentIndex);
+    if (hovered || currentIndex !== 0) {
+      setRenderedIndices(prev => {
+        if (prev.size === model.images.length) return prev;
+        return new Set(model.images.map((_, i) => i));
+      });
     }
-  }, [currentIndex, loadedImages]);
+  }, [hovered, currentIndex, model.images.length]);
 
-  const handleImageLoad = (idx) => {
-    setLoadedImages(prev => ({ ...prev, [idx]: true }));
-    if (idx === currentIndex) {
-      setDisplayIndex(idx);
+  useEffect(() => {
+    if (!isNearViewport) return;
+
+    const loadRemaining = () => {
+      setRenderedIndices(new Set(model.images.map((_, i) => i)));
+    };
+
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      const handle = window.requestIdleCallback(loadRemaining, { timeout: 2500 });
+      return () => window.cancelIdleCallback(handle);
+    } else {
+      const timer = setTimeout(loadRemaining, 1500);
+      return () => clearTimeout(timer);
     }
-  };
+  }, [isNearViewport, model.images.length]);
 
   const nextImage = (e) => {
     e.stopPropagation();
+    setRenderedIndices(new Set(model.images.map((_, i) => i)));
     setCurrentIndex((prev) => (prev + 1) % model.images.length);
   };
   
   const prevImage = (e) => {
     e.stopPropagation();
+    setRenderedIndices(new Set(model.images.map((_, i) => i)));
     setCurrentIndex((prev) => (prev - 1 + model.images.length) % model.images.length);
   };
 
@@ -217,6 +274,8 @@ function CatalogModelCard({ model }) {
 
   return (
     <div
+      ref={cardRef}
+      className="catalog-model-card"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -225,10 +284,19 @@ function CatalogModelCard({ model }) {
         transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease',
         transform: hovered ? 'translateY(-8px)' : 'translateY(0)',
         boxShadow: hovered ? `0 20px 50px rgba(232,112,8,0.18), 0 0 0 1px rgba(232,112,8,0.4)` : '0 4px 20px rgba(0,0,0,0.35)',
-        position: 'relative', display: 'flex', flexDirection: 'column', height: '520px'
+        position: 'relative', display: 'flex', flexDirection: 'column', height: '520px',
+        contain: 'layout paint',
       }}
     >
-      <div style={{ height: '312px', flexShrink: 0, overflow: 'hidden', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div 
+        className="catalog-image-container"
+        style={{ 
+          height: '312px', flexShrink: 0, overflow: 'hidden', position: 'relative', 
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          backgroundColor: '#181F25',
+          contain: 'strict'
+        }}
+      >
         <button onClick={prevImage} style={{
             position: 'absolute', top: '50%', transform: 'translateY(-50%)', left: '10px', background: 'rgba(15,19,22,0.6)', border: `1px solid ${ACCENT}50`, color: ACCENT,
             cursor: 'pointer', padding: '0.4rem', borderRadius: '50%', zIndex: 20, backdropFilter: 'blur(2px)', transition: 'all 0.3s',
@@ -240,23 +308,24 @@ function CatalogModelCard({ model }) {
           <ChevronLeft size={20} />
         </button>
 
-        {model.images.map((imgSrc, idx) => {
-          const isVisible = idx === displayIndex;
+        {isNearViewport && model.images.map((imgSrc, idx) => {
+          if (!renderedIndices.has(idx)) return null;
+          const isVisible = idx === currentIndex;
           return (
             <img 
               key={idx} 
               src={optimizeImageUrl(imgSrc)} 
               alt={`${model.name} - Anteojos en Óptica Gisela Santa Fe - Vista ${idx + 1}`} 
-              loading={idx === 0 ? "eager" : "lazy"} 
-              fetchPriority={idx === 0 ? "high" : "auto"} 
-              onLoad={() => handleImageLoad(idx)}
+              loading="lazy" 
+              decoding="async"
               style={{ 
                 position: 'absolute', inset: 0, width: '100%', height: '100%', 
                 objectFit: 'cover', objectPosition: 'center', display: 'block', 
                 opacity: isVisible ? 1 : 0,
                 transition: 'opacity 0.4s ease-in-out, transform 0.45s ease', 
                 transform: hovered && isVisible ? 'scale(1.05)' : 'scale(1)',
-                zIndex: isVisible ? 2 : 1 
+                zIndex: isVisible ? 2 : 1,
+                pointerEvents: 'none'
               }} 
             />
           );
@@ -277,7 +346,11 @@ function CatalogModelCard({ model }) {
           {model.images.map((_, idx) => (
             <div
               key={idx}
-              onClick={(e) => { e.stopPropagation(); setCurrentIndex(idx); }}
+              onClick={(e) => { 
+                e.stopPropagation(); 
+                setRenderedIndices(new Set(model.images.map((_, i) => i)));
+                setCurrentIndex(idx); 
+              }}
               style={{
                 width: '8px', height: '8px', borderRadius: '50%',
                 background: currentIndex === idx ? ACCENT : 'rgba(255,255,255,0.4)',
@@ -307,7 +380,7 @@ function CatalogModelCard({ model }) {
       </div>
     </div>
   );
-}
+});
 
 const extraImages = [
   'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791576087/2_w8gmaa.jpg',
@@ -316,37 +389,51 @@ const extraImages = [
   'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791576077/6_otcq5m.jpg'
 ];
 
-function ExtraGalleryCard({ images }) {
+const ExtraGalleryCard = React.memo(function ExtraGalleryCard({ images }) {
+  const cardRef = useRef(null);
+  const isNearViewport = useNearViewport(cardRef, '350px 0px');
   const [hovered, setHovered] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [displayIndex, setDisplayIndex] = useState(0);
-  const [loadedImages, setLoadedImages] = useState({});
+  const [renderedIndices, setRenderedIndices] = useState(() => new Set([0]));
 
   useEffect(() => {
-    if (loadedImages[currentIndex]) {
-      setDisplayIndex(currentIndex);
+    if (hovered || currentIndex !== 0) {
+      setRenderedIndices(prev => {
+        if (prev.size === images.length) return prev;
+        return new Set(images.map((_, i) => i));
+      });
     }
-  }, [currentIndex, loadedImages]);
+  }, [hovered, currentIndex, images.length]);
 
-  const handleImageLoad = (idx) => {
-    setLoadedImages(prev => ({ ...prev, [idx]: true }));
-    if (idx === currentIndex) {
-      setDisplayIndex(idx);
+  useEffect(() => {
+    if (!isNearViewport) return;
+    const loadRemaining = () => {
+      setRenderedIndices(new Set(images.map((_, i) => i)));
+    };
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      const handle = window.requestIdleCallback(loadRemaining, { timeout: 2500 });
+      return () => window.cancelIdleCallback(handle);
+    } else {
+      const timer = setTimeout(loadRemaining, 1500);
+      return () => clearTimeout(timer);
     }
-  };
+  }, [isNearViewport, images.length]);
 
   const nextImage = (e) => {
     e.stopPropagation();
+    setRenderedIndices(new Set(images.map((_, i) => i)));
     setCurrentIndex((prev) => (prev + 1) % images.length);
   };
   
   const prevImage = (e) => {
     e.stopPropagation();
+    setRenderedIndices(new Set(images.map((_, i) => i)));
     setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
   };
 
   return (
     <div
+      ref={cardRef}
       className="extra-gallery-card"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -356,7 +443,8 @@ function ExtraGalleryCard({ images }) {
         transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease',
         transform: hovered ? 'translateY(-8px)' : 'translateY(0)',
         boxShadow: hovered ? `0 20px 50px rgba(232,112,8,0.18), 0 0 0 1px rgba(232,112,8,0.4)` : '0 4px 20px rgba(0,0,0,0.35)',
-        position: 'relative', display: 'flex', flexDirection: 'column', height: '600px', width: '100%', maxWidth: '900px', margin: '0 auto'
+        position: 'relative', display: 'flex', flexDirection: 'column', height: '600px', width: '100%', maxWidth: '900px', margin: '0 auto',
+        contain: 'layout paint'
       }}
     >
       <div className="extra-gallery-wrapper" style={{ height: '100%', width: '100%', flexShrink: 0, overflow: 'hidden', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -375,23 +463,24 @@ function ExtraGalleryCard({ images }) {
           <ChevronLeft size={28} />
         </button>
 
-        {images.map((imgSrc, idx) => {
-          const isVisible = idx === displayIndex;
+        {isNearViewport && images.map((imgSrc, idx) => {
+          if (!renderedIndices.has(idx)) return null;
+          const isVisible = idx === currentIndex;
           return (
             <img 
               key={idx} 
               className="extra-gallery-image"
               src={optimizeImageUrl(imgSrc)} 
               alt={`Más modelos y accesorios de anteojos - Óptica Gisela Santa Fe - Vista ${idx + 1}`} 
-              loading={idx === 0 ? "eager" : "lazy"} 
-              fetchPriority={idx === 0 ? "high" : "auto"} 
-              onLoad={() => handleImageLoad(idx)}
+              loading="lazy" 
+              decoding="async"
               style={{ 
                 position: 'absolute', inset: 0, width: '100%', height: '100%', 
                 objectFit: 'cover', objectPosition: 'center', display: 'block', 
                 opacity: isVisible ? 1 : 0,
                 transition: 'opacity 0.4s ease-in-out', 
-                zIndex: isVisible ? 2 : 1 
+                zIndex: isVisible ? 2 : 1,
+                pointerEvents: 'none'
               }} 
             />
           );
@@ -412,7 +501,11 @@ function ExtraGalleryCard({ images }) {
           {images.map((_, idx) => (
             <button
               key={idx}
-              onClick={(e) => { e.stopPropagation(); setCurrentIndex(idx); }}
+              onClick={(e) => { 
+                e.stopPropagation(); 
+                setRenderedIndices(new Set(images.map((_, i) => i)));
+                setCurrentIndex(idx); 
+              }}
               style={{
                 width: currentIndex === idx ? '24px' : '10px',
                 height: '10px', borderRadius: '5px',
@@ -426,22 +519,10 @@ function ExtraGalleryCard({ images }) {
       </div>
     </div>
   );
-}
+});
 
 export default function MenuDestacado() {
   const [isFullCatalogOpen, setIsFullCatalogOpen] = useState(false);
-  useEffect(() => {
-    const imagesToPreload = [
-      ...originalDishes.filter(d => d.images).map(m => m.images[0]),
-      ...fullCatalogModels.map(m => m.images[0]),
-      ...extraImages
-    ].map(optimizeImageUrl);
-    
-    imagesToPreload.forEach(src => {
-      const img = new Image();
-      img.src = src;
-    });
-  }, []);
 
   const handleOpenCatalog = () => {
     setIsFullCatalogOpen(!isFullCatalogOpen);
@@ -524,6 +605,8 @@ export default function MenuDestacado() {
           .catalog-centered-card { width: 100% !important; }
         }
         .catalog-centered-card { width: calc((100% - 3.2rem) / 3); }
+        .catalog-model-card { contain: layout paint; }
+        .catalog-image-container { contain: strict; }
         .extra-gallery-dummy { display: none !important; }
         @media (max-width: 768px) {
           .extra-gallery-card { 
