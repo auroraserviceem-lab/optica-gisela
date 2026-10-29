@@ -132,16 +132,48 @@ const fullCatalogModels = [
   }
 ];
 
-const optimizeImageUrl = (url) => {
+const cleanCloudinaryUrl = (url) => {
   if (!url || !url.includes('cloudinary.com')) return url;
-  if (url.includes('/upload/f_auto')) return url;
-  return url.replace('/upload/', '/upload/f_auto,q_auto:best/');
+  const match = url.match(/(https:\/\/res\.cloudinary\.com\/[^\/]+\/image\/upload\/)(.*)/);
+  if (!match) return url;
+  const prefix = match[1];
+  const rest = match[2];
+  const versionIndex = rest.search(/v\d+\//);
+  if (versionIndex !== -1) {
+    return prefix + rest.slice(versionIndex);
+  }
+  return url;
 };
 
-const OriginalDishCard = React.memo(function OriginalDishCard({ dish }) {
+const optimizeImageUrl = (url, width = 800) => {
+  if (!url || !url.includes('cloudinary.com')) return url;
+  const base = cleanCloudinaryUrl(url);
+  return base.replace('/upload/', `/upload/f_auto,q_auto:good,w_${width},c_limit/`);
+};
+
+const getCloudinarySrcSet = (url) => {
+  if (!url || !url.includes('cloudinary.com')) return undefined;
+  const base = cleanCloudinaryUrl(url);
+  return [
+    `${base.replace('/upload/', '/upload/f_auto,q_auto:good,w_400,c_limit/')} 400w`,
+    `${base.replace('/upload/', '/upload/f_auto,q_auto:good,w_600,c_limit/')} 600w`,
+    `${base.replace('/upload/', '/upload/f_auto,q_auto:good,w_800,c_limit/')} 800w`,
+    `${base.replace('/upload/', '/upload/f_auto,q_auto:good,w_1000,c_limit/')} 1000w`,
+  ].join(', ');
+};
+
+const getPlaceholderUrl = (url) => {
+  if (!url || !url.includes('cloudinary.com')) return '';
+  const base = cleanCloudinaryUrl(url);
+  return base.replace('/upload/', '/upload/f_auto,q_auto:low,w_30,c_limit/');
+};
+
+const OriginalDishCard = React.memo(function OriginalDishCard({ dish, isPriority = false }) {
   const cardRef = useRef(null);
-  const isNearViewport = useNearViewport(cardRef, '350px 0px');
+  const near = useNearViewport(cardRef, '350px 0px');
+  const isNearViewport = isPriority || near;
   const [hovered, setHovered] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   return (
     <div
@@ -176,16 +208,62 @@ const OriginalDishCard = React.memo(function OriginalDishCard({ dish }) {
           contain: 'strict'
         }}
       >
+        {/* Shimmer Placeholder */}
+        <div 
+          className="catalog-placeholder-shimmer"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(90deg, #181F25 0%, #20272F 50%, #181F25 100%)',
+            backgroundSize: '200% 100%',
+            animation: 'placeholderShimmer 1.8s infinite ease-in-out',
+            zIndex: 0,
+            pointerEvents: 'none',
+            opacity: isLoaded ? 0 : 1,
+            transition: 'opacity 0.4s ease'
+          }}
+        />
+
+        {/* LQIP Micro-placeholder */}
+        {isNearViewport && dish.img && (
+          <img
+            src={getPlaceholderUrl(dish.img)}
+            alt=""
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center',
+              filter: 'blur(10px)',
+              transform: 'scale(1.04)',
+              opacity: isLoaded ? 0 : 0.85,
+              transition: 'opacity 0.4s ease',
+              zIndex: 0,
+              pointerEvents: 'none'
+            }}
+          />
+        )}
+
         {isNearViewport && (
           <img
-            src={optimizeImageUrl(dish.img)}
+            src={optimizeImageUrl(dish.img, 800)}
+            srcSet={getCloudinarySrcSet(dish.img)}
+            sizes="(max-width: 600px) 92vw, (max-width: 960px) 46vw, 360px"
             alt={`${dish.name} - Anteojos en Óptica Gisela Santa Fe`}
-            loading="lazy"
+            loading={isPriority ? "eager" : "lazy"}
             decoding="async"
+            fetchPriority={isPriority ? "high" : "low"}
+            onLoad={() => setIsLoaded(true)}
             style={{
               width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block',
-              transition: 'transform 0.45s ease', transform: hovered ? 'scale(1.05)' : 'scale(1)',
-              pointerEvents: 'none'
+              transition: 'opacity 0.4s ease, transform 0.45s ease', transform: hovered ? 'scale(1.05)' : 'scale(1)',
+              opacity: isLoaded ? 1 : 0,
+              pointerEvents: 'none',
+              position: 'relative',
+              zIndex: 1
             }}
           />
         )}
@@ -193,6 +271,7 @@ const OriginalDishCard = React.memo(function OriginalDishCard({ dish }) {
           position: 'absolute', inset: 0,
           background: `linear-gradient(to top, rgba(232,112,8,0.15), transparent)`,
           opacity: hovered ? 1 : 0, transition: 'opacity 0.35s ease', pointerEvents: 'none',
+          zIndex: 2
         }} />
       </div>
 
@@ -226,12 +305,18 @@ const OriginalDishCard = React.memo(function OriginalDishCard({ dish }) {
   );
 });
 
-const CatalogModelCard = React.memo(function CatalogModelCard({ model }) {
+const CatalogModelCard = React.memo(function CatalogModelCard({ model, isPriority = false }) {
   const cardRef = useRef(null);
-  const isNearViewport = useNearViewport(cardRef, '350px 0px');
+  const near = useNearViewport(cardRef, '350px 0px');
+  const isNearViewport = isPriority || near;
   const [hovered, setHovered] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [renderedIndices, setRenderedIndices] = useState(() => new Set([0]));
+  const [loadedMap, setLoadedMap] = useState({});
+
+  const handleImageLoaded = (idx) => {
+    setLoadedMap(prev => (prev[idx] ? prev : { ...prev, [idx]: true }));
+  };
 
   useEffect(() => {
     if (hovered || currentIndex !== 0) {
@@ -297,6 +382,45 @@ const CatalogModelCard = React.memo(function CatalogModelCard({ model }) {
           contain: 'strict'
         }}
       >
+        {/* Shimmer Placeholder */}
+        <div 
+          className="catalog-placeholder-shimmer"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(90deg, #181F25 0%, #20272F 50%, #181F25 100%)',
+            backgroundSize: '200% 100%',
+            animation: 'placeholderShimmer 1.8s infinite ease-in-out',
+            zIndex: 0,
+            pointerEvents: 'none',
+            opacity: loadedMap[currentIndex] ? 0 : 1,
+            transition: 'opacity 0.4s ease'
+          }}
+        />
+
+        {/* LQIP Micro-placeholder */}
+        {isNearViewport && model.images[currentIndex] && (
+          <img
+            src={getPlaceholderUrl(model.images[currentIndex])}
+            alt=""
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center',
+              filter: 'blur(10px)',
+              transform: 'scale(1.04)',
+              opacity: loadedMap[currentIndex] ? 0 : 0.85,
+              transition: 'opacity 0.4s ease',
+              zIndex: 0,
+              pointerEvents: 'none'
+            }}
+          />
+        )}
+
         <button onClick={prevImage} style={{
             position: 'absolute', top: '50%', transform: 'translateY(-50%)', left: '10px', background: 'rgba(15,19,22,0.6)', border: `1px solid ${ACCENT}50`, color: ACCENT,
             cursor: 'pointer', padding: '0.4rem', borderRadius: '50%', zIndex: 20, backdropFilter: 'blur(2px)', transition: 'all 0.3s',
@@ -311,13 +435,19 @@ const CatalogModelCard = React.memo(function CatalogModelCard({ model }) {
         {isNearViewport && model.images.map((imgSrc, idx) => {
           if (!renderedIndices.has(idx)) return null;
           const isVisible = idx === currentIndex;
+          const isImgPriority = isPriority && idx === 0;
+
           return (
             <img 
               key={idx} 
-              src={optimizeImageUrl(imgSrc)} 
+              src={optimizeImageUrl(imgSrc, 800)} 
+              srcSet={getCloudinarySrcSet(imgSrc)}
+              sizes="(max-width: 600px) 92vw, (max-width: 960px) 46vw, 360px"
               alt={`${model.name} - Anteojos en Óptica Gisela Santa Fe - Vista ${idx + 1}`} 
-              loading="lazy" 
+              loading={isImgPriority ? "eager" : "lazy"} 
               decoding="async"
+              fetchPriority={isImgPriority ? "high" : "low"}
+              onLoad={() => handleImageLoaded(idx)}
               style={{ 
                 position: 'absolute', inset: 0, width: '100%', height: '100%', 
                 objectFit: 'cover', objectPosition: 'center', display: 'block', 
@@ -395,6 +525,11 @@ const ExtraGalleryCard = React.memo(function ExtraGalleryCard({ images }) {
   const [hovered, setHovered] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [renderedIndices, setRenderedIndices] = useState(() => new Set([0]));
+  const [loadedMap, setLoadedMap] = useState({});
+
+  const handleImageLoaded = (idx) => {
+    setLoadedMap(prev => (prev[idx] ? prev : { ...prev, [idx]: true }));
+  };
 
   useEffect(() => {
     if (hovered || currentIndex !== 0) {
@@ -449,8 +584,24 @@ const ExtraGalleryCard = React.memo(function ExtraGalleryCard({ images }) {
     >
       <div className="extra-gallery-wrapper" style={{ height: '100%', width: '100%', flexShrink: 0, overflow: 'hidden', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         
+        {/* Shimmer Placeholder */}
+        <div 
+          className="catalog-placeholder-shimmer"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(90deg, #181F25 0%, #20272F 50%, #181F25 100%)',
+            backgroundSize: '200% 100%',
+            animation: 'placeholderShimmer 1.8s infinite ease-in-out',
+            zIndex: 0,
+            pointerEvents: 'none',
+            opacity: loadedMap[currentIndex] ? 0 : 1,
+            transition: 'opacity 0.4s ease'
+          }}
+        />
+
         {/* Invisible image to naturally dictate the aspect ratio on mobile without forcing a fixed square */}
-        <img src={optimizeImageUrl(images[0])} alt="" style={{ width: '100%', height: 'auto', visibility: 'hidden', display: 'block' }} className="extra-gallery-dummy" />
+        <img src={optimizeImageUrl(images[0], 800)} alt="" style={{ width: '100%', height: 'auto', visibility: 'hidden', display: 'block' }} className="extra-gallery-dummy" />
 
         <button onClick={prevImage} style={{
             position: 'absolute', top: '50%', transform: 'translateY(-50%)', left: '15px', background: 'rgba(15,19,22,0.8)', border: `1px solid ${ACCENT}50`, color: ACCENT,
@@ -470,10 +621,14 @@ const ExtraGalleryCard = React.memo(function ExtraGalleryCard({ images }) {
             <img 
               key={idx} 
               className="extra-gallery-image"
-              src={optimizeImageUrl(imgSrc)} 
+              src={optimizeImageUrl(imgSrc, 1000)} 
+              srcSet={getCloudinarySrcSet(imgSrc)}
+              sizes="(max-width: 768px) 94vw, 900px"
               alt={`Más modelos y accesorios de anteojos - Óptica Gisela Santa Fe - Vista ${idx + 1}`} 
               loading="lazy" 
               decoding="async"
+              fetchPriority="low"
+              onLoad={() => handleImageLoaded(idx)}
               style={{ 
                 position: 'absolute', inset: 0, width: '100%', height: '100%', 
                 objectFit: 'cover', objectPosition: 'center', display: 'block', 
@@ -543,13 +698,13 @@ export default function MenuDestacado() {
           </p>
         </div>
 
-        {/* 6 Original highlighted items */}
+        {/* 6 Original highlighted items with priority loading for the first 3 */}
         <div className="menu-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.6rem', margin: '3.5rem 0 3rem' }}>
-          {originalDishes.map((dish) => (
+          {originalDishes.map((dish, index) => (
             dish.images ? (
-              <CatalogModelCard key={dish.id} model={dish} />
+              <CatalogModelCard key={dish.id} model={dish} isPriority={index < 3} />
             ) : (
-              <OriginalDishCard key={dish.id} dish={dish} />
+              <OriginalDishCard key={dish.id} dish={dish} isPriority={index < 3} />
             )
           ))}
         </div>
@@ -565,7 +720,7 @@ export default function MenuDestacado() {
             <div className="menu-grid full-catalog-flex" style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '1.6rem', marginBottom: '4rem' }}>
               {fullCatalogModels.map((model) => (
                 <div key={model.id} className="catalog-centered-card">
-                  <CatalogModelCard model={model} />
+                  <CatalogModelCard model={model} isPriority={false} />
                 </div>
               ))}
             </div>
@@ -623,6 +778,10 @@ export default function MenuDestacado() {
             display: block !important;
           }
           .extra-gallery-image { object-fit: contain !important; }
+        }
+        @keyframes placeholderShimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
         }
         @keyframes modalFadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes imageFade { from { opacity: 0.5; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
