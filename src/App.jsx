@@ -12,14 +12,25 @@ import { FloatingWhatsApp, ReservationModal } from './components/UI';
 
 export default function App() {
   const [modalOpen, setModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   return (
     <>
-      <Navbar onReserve={() => setModalOpen(true)} />
+      <Navbar 
+        onReserve={() => setModalOpen(true)}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        isSearchOpen={isSearchOpen}
+        setIsSearchOpen={setIsSearchOpen}
+      />
       <main>
         <Hero onReserve={() => setModalOpen(true)} />
         <NuestraHistoria />
-        <MenuDestacado />
+        <MenuDestacado 
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+        />
         <Experiencia />
         <Reviews />
         <Contacto onReserve={() => setModalOpen(true)} />

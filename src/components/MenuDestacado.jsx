@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 
 const ACCENT = '#E87008';
 
@@ -676,12 +676,34 @@ const ExtraGalleryCard = React.memo(function ExtraGalleryCard({ images }) {
   );
 });
 
-export default function MenuDestacado() {
+export default function MenuDestacado({
+  searchQuery = '',
+  setSearchQuery = () => {},
+}) {
   const [isFullCatalogOpen, setIsFullCatalogOpen] = useState(false);
 
   const handleOpenCatalog = () => {
     setIsFullCatalogOpen(!isFullCatalogOpen);
   };
+
+  const allCatalogModels = [...originalDishes, ...fullCatalogModels];
+
+  const normalizedQuery = (searchQuery || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim();
+
+  const isSearching = Boolean(normalizedQuery);
+
+  const filteredDishes = isSearching
+    ? allCatalogModels.filter((item) => {
+        const name = (item.name || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const desc = (item.description || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const tag = (item.tag || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        return name.includes(normalizedQuery) || desc.includes(normalizedQuery) || tag.includes(normalizedQuery);
+      })
+    : originalDishes;
 
   return (
     <section id="menu" style={{ background: '#0F1316', padding: '7rem 1.5rem', position: 'relative', overflow: 'hidden' }}>
@@ -698,56 +720,175 @@ export default function MenuDestacado() {
           </p>
         </div>
 
-        {/* 6 Original highlighted items with priority loading for the first 3 */}
-        <div className="menu-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.6rem', margin: '3.5rem 0 3rem' }}>
-          {originalDishes.map((dish, index) => (
-            dish.images ? (
-              <CatalogModelCard key={dish.id} model={dish} isPriority={index < 3} />
-            ) : (
-              <OriginalDishCard key={dish.id} dish={dish} isPriority={index < 3} />
-            )
-          ))}
-        </div>
+        {/* Search feedback banner when filtering */}
+        {isSearching && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '1rem',
+            backgroundColor: '#181F25',
+            border: `1.5px solid ${ACCENT}`,
+            borderRadius: '14px',
+            padding: '0.9rem 1.4rem',
+            margin: '2.5rem 0 1.5rem',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+            animation: 'modalFadeIn 0.3s ease',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <div style={{
+                width: '32px', height: '32px', borderRadius: '50%',
+                background: 'rgba(232,112,8,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>
+                <Search size={16} color={ACCENT} />
+              </div>
+              <span style={{ color: '#ffffff', fontSize: '0.92rem', fontWeight: 600 }}>
+                Filtrando por: <span style={{ color: ACCENT }}>"{searchQuery}"</span>
+              </span>
+              <span style={{
+                backgroundColor: 'rgba(232,112,8,0.12)',
+                color: ACCENT,
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                padding: '0.22rem 0.65rem',
+                borderRadius: '9999px',
+                border: `1px solid ${ACCENT}40`
+              }}>
+                {filteredDishes.length} {filteredDishes.length === 1 ? 'modelo encontrado' : 'modelos encontrados'}
+              </span>
+            </div>
 
-        {isFullCatalogOpen && (
-          <div style={{ animation: 'modalFadeIn 0.5s ease' }}>
-            <div style={{ textAlign: 'center', margin: '5rem 0 2rem' }}>
-              <h2 className="section-title" style={{ display: 'inline-block', fontSize: '2rem', marginBottom: '0.6rem' }}>
-                CATÁLOGO COMPLETO
-              </h2>
-              <div style={{ width: '80px', height: '2px', backgroundColor: ACCENT, margin: '0 auto' }}></div>
-            </div>
-            <div className="menu-grid full-catalog-flex" style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '1.6rem', marginBottom: '4rem' }}>
-              {fullCatalogModels.map((model) => (
-                <div key={model.id} className="catalog-centered-card">
-                  <CatalogModelCard model={model} isPriority={false} />
-                </div>
-              ))}
-            </div>
-
-            <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-              <h3 className="section-title" style={{ display: 'inline-block', fontSize: '1.6rem', color: ACCENT, marginBottom: '0.6rem' }}>
-                MÁS MODELOS Y ACCESORIOS
-              </h3>
-              <div style={{ width: '60px', height: '2px', backgroundColor: ACCENT, margin: '0 auto' }}></div>
-            </div>
-            
-            <div style={{ marginBottom: '4rem' }}>
-              <ExtraGalleryCard images={extraImages} />
-            </div>
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              style={{
+                background: 'rgba(255,255,255,0.06)',
+                border: `1px solid rgba(255,255,255,0.2)`,
+                color: '#ffffff',
+                borderRadius: '8px',
+                padding: '0.4rem 0.9rem',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                letterSpacing: '0.05em',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.borderColor = ACCENT;
+                e.currentTarget.style.color = ACCENT;
+                e.currentTarget.style.background = 'rgba(232,112,8,0.12)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
+                e.currentTarget.style.color = '#ffffff';
+                e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+              }}
+            >
+              <X size={14} />
+              Limpiar búsqueda
+            </button>
           </div>
         )}
 
-        <div style={{ textAlign: 'center' }}>
-          <button 
-            className="gold-pill-btn" 
-            id="ver-menu-completo"
-            type="button"
-            onClick={handleOpenCatalog}
-            style={{ padding: '0.9rem 2.8rem', fontSize: '0.85rem', letterSpacing: '0.12em', cursor: 'pointer' }}>
-            {isFullCatalogOpen ? 'OCULTAR CATÁLOGO COMPLETO' : 'VER CATÁLOGO COMPLETO'}
-          </button>
-        </div>
+        {/* Empty state if search returns 0 results */}
+        {isSearching && filteredDishes.length === 0 ? (
+          <div style={{
+            textAlign: 'center',
+            padding: '4rem 2rem',
+            backgroundColor: '#181F25',
+            borderRadius: '16px',
+            border: '1px solid rgba(255,255,255,0.08)',
+            margin: '2rem 0 3rem',
+            animation: 'modalFadeIn 0.3s ease',
+          }}>
+            <div style={{
+              width: '64px',
+              height: '64px',
+              borderRadius: '50%',
+              backgroundColor: 'rgba(232,112,8,0.12)',
+              border: `1.5px solid ${ACCENT}50`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 1.2rem'
+            }}>
+              <Search size={30} color={ACCENT} />
+            </div>
+            <h3 style={{ color: '#ffffff', fontSize: '1.4rem', marginBottom: '0.6rem', fontFamily: "'Playfair Display', serif" }}>
+              No encontramos modelos para "{searchQuery}"
+            </h3>
+            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.88rem', maxWidth: '480px', margin: '0 auto 1.6rem', lineHeight: 1.6 }}>
+              Intentá buscar por otro término o color (ej: Black, Red, Blue, Green, Carey, Crystal, Oversize, etc.).
+            </p>
+            <button
+              type="button"
+              className="gold-pill-btn"
+              onClick={() => setSearchQuery('')}
+              style={{ fontSize: '0.8rem', padding: '0.65rem 1.8rem' }}
+            >
+              Ver todos los modelos
+            </button>
+          </div>
+        ) : (
+          /* Models Grid */
+          <div className="menu-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.6rem', margin: isSearching ? '2rem 0 3rem' : '3.5rem 0 3rem' }}>
+            {filteredDishes.map((dish, index) => (
+              dish.images ? (
+                <CatalogModelCard key={dish.id} model={dish} isPriority={index < 3} />
+              ) : (
+                <OriginalDishCard key={dish.id} dish={dish} isPriority={index < 3} />
+              )
+            ))}
+          </div>
+        )}
+
+        {!isSearching && (
+          <>
+            {isFullCatalogOpen && (
+              <div style={{ animation: 'modalFadeIn 0.5s ease' }}>
+                <div style={{ textAlign: 'center', margin: '5rem 0 2rem' }}>
+                  <h2 className="section-title" style={{ display: 'inline-block', fontSize: '2rem', marginBottom: '0.6rem' }}>
+                    CATÁLOGO COMPLETO
+                  </h2>
+                  <div style={{ width: '80px', height: '2px', backgroundColor: ACCENT, margin: '0 auto' }}></div>
+                </div>
+                <div className="menu-grid full-catalog-flex" style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '1.6rem', marginBottom: '4rem' }}>
+                  {fullCatalogModels.map((model) => (
+                    <div key={model.id} className="catalog-centered-card">
+                      <CatalogModelCard model={model} isPriority={false} />
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                  <h3 className="section-title" style={{ display: 'inline-block', fontSize: '1.6rem', color: ACCENT, marginBottom: '0.6rem' }}>
+                    MÁS MODELOS Y ACCESORIOS
+                  </h3>
+                  <div style={{ width: '60px', height: '2px', backgroundColor: ACCENT, margin: '0 auto' }}></div>
+                </div>
+                
+                <div style={{ marginBottom: '4rem' }}>
+                  <ExtraGalleryCard images={extraImages} />
+                </div>
+              </div>
+            )}
+
+            <div style={{ textAlign: 'center' }}>
+              <button 
+                className="gold-pill-btn" 
+                id="ver-menu-completo"
+                type="button"
+                onClick={handleOpenCatalog}
+                style={{ padding: '0.9rem 2.8rem', fontSize: '0.85rem', letterSpacing: '0.12em', cursor: 'pointer' }}>
+                {isFullCatalogOpen ? 'OCULTAR CATÁLOGO COMPLETO' : 'VER CATÁLOGO COMPLETO'}
+              </button>
+            </div>
+          </>
+        )}
       </div>
 
       <style>{`
