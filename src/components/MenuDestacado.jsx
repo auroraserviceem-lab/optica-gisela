@@ -36,6 +36,7 @@ const originalDishes = [
     name: 'Black & Red',
     price: '',
     tag: 'Diseño',
+    categories: ['recetados', 'clip-on'],
     description: 'Armazón negro con detalles rojos en las patillas, de estilo moderno y llamativo.',
     images: [
       'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791568653/5_ek6eve.jpg',
@@ -48,6 +49,7 @@ const originalDishes = [
     name: 'Blue Orange',
     price: '',
     tag: 'Diseño',
+    categories: ['recetados', 'clip-on'],
     description: 'Armazón geométrico en azul petróleo con detalles naranja y patillas estampadas. Un diseño original, colorido y moderno para destacar tu estilo.',
     images: [
       'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791575206/11_exsxh1.jpg',
@@ -60,6 +62,7 @@ const originalDishes = [
     name: 'Black Gold',
     price: '',
     tag: 'Diseño',
+    categories: ['recetados', 'sol'],
     description: 'Armazón rectangular en negro y carey oscuro con detalles dorados. Un diseño clásico, elegante y sofisticado.',
     images: [
       'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791571143/34_lvtnot.jpg',
@@ -72,6 +75,7 @@ const originalDishes = [
     name: 'Green Contrast',
     price: '',
     tag: 'Diseño',
+    categories: ['clip-on', 'sol'],
     description: 'Armazón geométrico en tono ámbar translúcido con detalles verde neón y patillas estampadas. Un diseño audaz, moderno y lleno de personalidad.',
     images: [
       'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791570539/12_ekleha.jpg',
@@ -84,6 +88,7 @@ const originalDishes = [
     name: 'Gray Leopard',
     price: '',
     tag: 'Diseño',
+    categories: ['recetados'],
     description: 'Armazón rectangular en gris translúcido con detalles estilo animal print. Un diseño moderno, elegante y con mucha personalidad.',
     images: [
       'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791570737/24_uxcnv9.jpg',
@@ -96,6 +101,7 @@ const originalDishes = [
     name: 'Green Crystal',
     price: '',
     tag: 'Diseño',
+    categories: ['recetados', 'clip-on'],
     description: 'Armazón rectangular translúcido en tonos verde y gris, con un diseño moderno, elegante y versátil.',
     images: [
       'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791570953/30_vcai8f.jpg',
@@ -111,6 +117,7 @@ const fullCatalogModels = [
     name: 'Crystal Iridiscente',
     price: '',
     tag: 'Diseño',
+    categories: ['sol', 'recetados'],
     description: 'Armazón geométrico translúcido con reflejos iridiscentes, un diseño moderno, elegante y llamativo.',
     images: [
       'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791570275/16_waapuv.jpg',
@@ -123,6 +130,7 @@ const fullCatalogModels = [
     name: 'Brown Oversize',
     price: '',
     tag: 'Diseño',
+    categories: ['sol'],
     description: 'Armazón grande en tono marrón carey, con un diseño elegante, moderno y sofisticado.',
     images: [
       'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791571667/28_zjlbf5.jpg',
@@ -676,10 +684,18 @@ const ExtraGalleryCard = React.memo(function ExtraGalleryCard({ images }) {
   );
 });
 
+const FILTER_CATEGORIES = [
+  { id: 'todos', label: 'Todos' },
+  { id: 'recetados', label: 'Anteojos recetados' },
+  { id: 'sol', label: 'Anteojos de sol' },
+  { id: 'clip-on', label: 'Clip-on' },
+];
+
 export default function MenuDestacado({
   searchQuery = '',
   setSearchQuery = () => {},
 }) {
+  const [selectedCategory, setSelectedCategory] = useState('todos');
   const [isFullCatalogOpen, setIsFullCatalogOpen] = useState(false);
 
   const handleOpenCatalog = () => {
@@ -695,15 +711,22 @@ export default function MenuDestacado({
     .trim();
 
   const isSearching = Boolean(normalizedQuery);
+  const isCategoryFiltered = selectedCategory !== 'todos';
 
+  // Base list according to category selector
+  const categoryBaseModels = isCategoryFiltered
+    ? allCatalogModels.filter((item) => item.categories && item.categories.includes(selectedCategory))
+    : (isSearching ? allCatalogModels : originalDishes);
+
+  // If search query is present, filter further
   const filteredDishes = isSearching
-    ? allCatalogModels.filter((item) => {
+    ? categoryBaseModels.filter((item) => {
         const name = (item.name || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
         const desc = (item.description || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
         const tag = (item.tag || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
         return name.includes(normalizedQuery) || desc.includes(normalizedQuery) || tag.includes(normalizedQuery);
       })
-    : originalDishes;
+    : categoryBaseModels;
 
   return (
     <section id="menu" style={{ background: '#0F1316', padding: '7rem 1.5rem', position: 'relative', overflow: 'hidden' }}>
@@ -720,6 +743,29 @@ export default function MenuDestacado({
           </p>
         </div>
 
+        {/* Professional and responsive category filter selector */}
+        <div
+          className="catalog-filter-container"
+          role="tablist"
+          aria-label="Filtrar modelos de anteojos"
+        >
+          {FILTER_CATEGORIES.map(category => {
+            const isSelected = selectedCategory === category.id;
+            return (
+              <button
+                key={category.id}
+                type="button"
+                role="tab"
+                aria-selected={isSelected}
+                className={`catalog-filter-btn ${isSelected ? 'active' : ''}`}
+                onClick={() => setSelectedCategory(category.id)}
+              >
+                {category.label}
+              </button>
+            );
+          })}
+        </div>
+
         {/* Search feedback banner when filtering */}
         {isSearching && (
           <div style={{
@@ -732,7 +778,7 @@ export default function MenuDestacado({
             border: `1.5px solid ${ACCENT}`,
             borderRadius: '14px',
             padding: '0.9rem 1.4rem',
-            margin: '2.5rem 0 1.5rem',
+            margin: '0 0 1.5rem',
             boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
             animation: 'modalFadeIn 0.3s ease',
           }}>
@@ -745,6 +791,11 @@ export default function MenuDestacado({
               </div>
               <span style={{ color: '#ffffff', fontSize: '0.92rem', fontWeight: 600 }}>
                 Filtrando por: <span style={{ color: ACCENT }}>"{searchQuery}"</span>
+                {isCategoryFiltered && (
+                  <span style={{ color: 'rgba(255,255,255,0.7)', fontWeight: 400, marginLeft: '6px' }}>
+                    en {FILTER_CATEGORIES.find(c => c.id === selectedCategory)?.label}
+                  </span>
+                )}
               </span>
               <span style={{
                 backgroundColor: 'rgba(232,112,8,0.12)',
@@ -822,12 +873,15 @@ export default function MenuDestacado({
               No encontramos modelos para "{searchQuery}"
             </h3>
             <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.88rem', maxWidth: '480px', margin: '0 auto 1.6rem', lineHeight: 1.6 }}>
-              Intentá buscar por otro término o color (ej: Black, Red, Blue, Green, Carey, Crystal, Oversize, etc.).
+              Intentá buscar por otro término o seleccioná otra categoría.
             </p>
             <button
               type="button"
               className="gold-pill-btn"
-              onClick={() => setSearchQuery('')}
+              onClick={() => {
+                setSearchQuery('');
+                setSelectedCategory('todos');
+              }}
               style={{ fontSize: '0.8rem', padding: '0.65rem 1.8rem' }}
             >
               Ver todos los modelos
@@ -835,7 +889,17 @@ export default function MenuDestacado({
           </div>
         ) : (
           /* Models Grid */
-          <div className="menu-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.6rem', margin: isSearching ? '2rem 0 3rem' : '3.5rem 0 3rem' }}>
+          <div 
+            key={selectedCategory}
+            className="menu-grid" 
+            style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(3, 1fr)', 
+              gap: '1.6rem', 
+              margin: isSearching ? '2rem 0 3rem' : '2.5rem 0 3rem',
+              animation: 'modalFadeIn 0.35s ease'
+            }}
+          >
             {filteredDishes.map((dish, index) => (
               dish.images ? (
                 <CatalogModelCard key={dish.id} model={dish} isPriority={index < 3} />
@@ -846,7 +910,7 @@ export default function MenuDestacado({
           </div>
         )}
 
-        {!isSearching && (
+        {!isSearching && !isCategoryFiltered && (
           <>
             {isFullCatalogOpen && (
               <div style={{ animation: 'modalFadeIn 0.5s ease' }}>
@@ -892,6 +956,69 @@ export default function MenuDestacado({
       </div>
 
       <style>{`
+        .catalog-filter-container {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.6rem;
+          margin: 2.2rem auto 2.8rem;
+          padding: 0.4rem 0.5rem;
+          background: rgba(24, 31, 37, 0.85);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          border-radius: 9999px;
+          max-width: fit-content;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+          backdrop-filter: blur(10px);
+          transition: all 0.3s ease;
+        }
+        .catalog-filter-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0.65rem 1.45rem;
+          border-radius: 9999px;
+          border: 1px solid transparent;
+          background: transparent;
+          color: rgba(255, 255, 255, 0.78);
+          font-family: 'Inter', sans-serif;
+          font-size: 0.84rem;
+          font-weight: 600;
+          letter-spacing: 0.04em;
+          cursor: pointer;
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          white-space: nowrap;
+          outline: none;
+        }
+        .catalog-filter-btn:hover:not(.active) {
+          color: #ffffff;
+          background: rgba(255, 255, 255, 0.08);
+          border-color: rgba(232, 112, 8, 0.4);
+          transform: translateY(-1px);
+        }
+        .catalog-filter-btn.active {
+          background: #E87008;
+          color: #ffffff;
+          font-weight: 700;
+          border-color: #E87008;
+          box-shadow: 0 4px 18px rgba(232, 112, 8, 0.45);
+          transform: translateY(-1px);
+        }
+        @media (max-width: 680px) {
+          .catalog-filter-container {
+            border-radius: 18px !important;
+            padding: 0.45rem !important;
+            gap: 0.4rem !important;
+            width: 100% !important;
+            max-width: 440px !important;
+            flex-wrap: wrap !important;
+          }
+          .catalog-filter-btn {
+            flex: 1 1 calc(50% - 0.4rem) !important;
+            padding: 0.6rem 0.7rem !important;
+            font-size: 0.78rem !important;
+            text-align: center !important;
+          }
+        }
         @media (max-width: 960px) {
           .menu-grid:not(.full-catalog-flex) { grid-template-columns: repeat(2, 1fr) !important; }
           .catalog-centered-card { width: calc((100% - 1.6rem) / 2) !important; }
