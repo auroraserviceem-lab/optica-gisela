@@ -1,91 +1,115 @@
-import React, { useState } from 'react';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
 
-const ACCENT = '#E87008';
-
-const modalImages = [
-  'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791430666/c27dc5ab-6cf0-4c9b-8256-91fac0b539f3_y1tkgs.jpg',
-  'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791430666/0c21f7d5-fb60-4bdb-8c19-3373747aff58_ht6fqr.jpg',
-  'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791430667/02b1be74-ccea-4956-9fd8-f7b0dc79797b_qup1r5.jpg',
-  'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791430667/8bbaccb2-6be8-4619-8a4d-9fdb436bbb73_j5n9pr.jpg',
-  'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791430667/4e5ae6fa-000c-40c3-8279-42f3578ba38d_t2kmti.jpg'
-];
+const ACCENT = 'var(--vadano-primary)';
+const ACCENT2 = 'var(--vadano-secondary)';
 
 const galleryItems = [
   {
-    id: 'video-1',
-    video: 'https://res.cloudinary.com/dkc39tw6r/video/upload/f_auto,q_auto/v1789439572/optica.gisela_Modelitos_clipon_disponibles__todos_con_cristales_polarizado_2023-11-17_CzwD37UucNz_3238105169488626547_sajxd3.mp4',
-    alt: 'Óptica Gisela en Santa Fe - Modelos Clip On con cristales polarizados',
-    aspectRatio: '4/3',
+    id: 'item-1',
+    video: 'https://res.cloudinary.com/dkc39tw6r/video/upload/v1794960253/laposada_____%EF%B8%8F_Verano_en_la_Posada___Nuestros_hu%C3%A9spedes_disfrutaron_a_f_2025-03-10_DHBi_LguQvk_358530_DHBi_LguQvk_yhw5he.mp4',
+    alt: 'La Posada — Verano y pileta en el hotel',
   },
   {
-    id: 'video-2',
-    video: 'https://res.cloudinary.com/dkc39tw6r/video/upload/f_auto,q_auto/v1789521362/optica.gisela_2023-09-21_CxdS-H9OdiQ_3196794744491071632_w7kyhi.mp4',
-    alt: 'Óptica Gisela en Santa Fe - Nueva Temporada de anteojos recetados y de sol',
-    aspectRatio: '4/3',
+    id: 'item-2',
+    video: 'https://res.cloudinary.com/dkc39tw6r/video/upload/v1794960268/laposada____Veni_a_conocer_nuestras_habitaciones__Nos_encontramos_ubicad_2025-11-27_DRk1zx7D24v_377537_DRk1zx7D24v_eqwtxi.mp4',
+    alt: 'La Posada — Recorrido por las habitaciones',
   },
   {
-    id: 'img-3',
-    img: 'https://res.cloudinary.com/dkc39tw6r/image/upload/f_auto,q_auto/v1789522777/7d6a51ae-ee62-4e73-ac10-b48121be8a72_amnr8i.jpg',
-    alt: 'Óptica Gisela en Santa Fe - Colección de armazones modernos',
-    aspectRatio: '3/4',
+    id: 'item-3',
+    img: 'https://res.cloudinary.com/dkc39tw6r/image/upload/v1794960786/laposada____TIEMPOS_PARA_RENOVARSE_____Lleg%C3%B3_el_tiempo_de_cambios__y_h_2024-03-13_C4eVZQVu2s2_3323187669554129718_02_wxppyf.jpg',
+    alt: 'La Posada — Espacios renovados del hotel',
   },
   {
-    id: 'img-4',
-    img: 'https://res.cloudinary.com/dkc39tw6r/image/upload/f_auto,q_auto/v1789440100/R6CSH_aehpe3.jpg',
-    alt: 'Óptica Gisela en Santa Fe - Diseños modernos en salud visual',
-    aspectRatio: '3/4',
+    id: 'item-4',
+    img: 'https://res.cloudinary.com/dkc39tw6r/image/upload/v1794960836/laposada____RINCONES_M%C3%81GICOS_____Hay_espacios_que_se_convierten_en_lugar_2025-01-13_DEyTvVruMsk_3544982672675228452_02_cxuacx.jpg',
+    alt: 'La Posada — Rincones y áreas comunes',
   },
   {
-    id: 'img-5',
-    img: 'https://res.cloudinary.com/dkc39tw6r/image/upload/f_auto,q_auto/v1789440213/BpiDf_ancozj.jpg',
-    alt: 'Óptica Gisela en Santa Fe - Tendencias en anteojos de diseño',
-    aspectRatio: '3/4',
+    id: 'item-5',
+    img: 'https://res.cloudinary.com/dkc39tw6r/image/upload/v1794960973/laposada____LAS_PAUSAS_SON_NECESARIAS_____Imagina_desconectar_y_descans_2024-08-04_C-RHC5RuXxc_3427551776670841948_02_yi55ph.jpg',
+    alt: 'La Posada — Descanso y desconexión',
   },
   {
-    id: 'img-6',
-    img: 'https://res.cloudinary.com/dkc39tw6r/image/upload/f_auto,q_auto/v1789440302/g5Pqe_pugxku.jpg',
-    alt: 'Óptica Gisela en Santa Fe - Anteojos de sol con protección UV',
-    aspectRatio: '3/4',
+    id: 'item-6',
+    img: 'https://res.cloudinary.com/dkc39tw6r/image/upload/v1794960918/laposada____Qu%C3%A9_bella_es_nuestra_Posada__%EF%B8%8F___Las_noches_se_ponen_cada_ve_2024-10-11_DBANH4PREPN_3476836628356678605_02_piozdm.jpg',
+    alt: 'La Posada — Noches en la posada',
   },
 ];
 
-function GalleryPhoto({ item }) {
+function GalleryItem({ item }) {
   const [hovered, setHovered] = useState(false);
+  const containerRef = useRef(null);
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    if (item.video && videoRef.current) {
+      const video = videoRef.current;
+      video.muted = true;
+      video.defaultMuted = true;
+      video.playsInline = true;
+
+      const attemptPlay = () => {
+        if (video && video.paused) {
+          video.play().catch(() => {});
+        }
+      };
+
+      attemptPlay();
+
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'visible') {
+          attemptPlay();
+        }
+      };
+
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      window.addEventListener('focus', attemptPlay);
+
+      return () => {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+        window.removeEventListener('focus', attemptPlay);
+      };
+    }
+  }, [item.video]);
 
   return (
     <div
+      ref={containerRef}
       id={`gallery-${item.id}`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        borderRadius: '16px',
+        borderRadius: '18px',
         overflow: 'hidden',
         position: 'relative',
         cursor: 'pointer',
-        border: `2px solid ${hovered ? ACCENT : 'rgba(255,255,255,0.12)'}`,
+        border: `2px solid ${hovered ? 'var(--vadano-primary)' : 'rgba(238, 223, 204, 0.18)'}`,
         transition: 'border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease',
         transform: hovered ? 'scale(1.02)' : 'scale(1)',
-        boxShadow: hovered ? `0 12px 36px rgba(232,112,8,0.2)` : '0 4px 12px rgba(0,0,0,0.3)',
-        aspectRatio: item.aspectRatio || '4/3',
+        boxShadow: hovered ? '0 16px 40px var(--vadano-primary-glow)' : '0 6px 20px rgba(0,0,0,0.5)',
         width: '100%',
+        backgroundColor: '#0A130D',
+        aspectRatio: '4 / 3',
       }}
     >
       {item.video ? (
         <video
+          ref={videoRef}
           src={item.video}
           autoPlay
           loop
           muted
           playsInline
-          preload="metadata"
+          disablePictureInPicture
+          disableRemotePlayback
           style={{
             width: '100%',
             height: '100%',
             objectFit: 'cover',
             display: 'block',
+            backgroundColor: '#0A130D',
             transition: 'transform 0.5s ease',
-            transform: hovered ? 'scale(1.08)' : 'scale(1)',
+            transform: hovered ? 'scale(1.06)' : 'scale(1)',
           }}
         />
       ) : (
@@ -101,16 +125,17 @@ function GalleryPhoto({ item }) {
             objectPosition: 'center',
             display: 'block',
             transition: 'transform 0.5s ease',
-            transform: hovered ? 'scale(1.08)' : 'scale(1)',
+            transform: hovered ? 'scale(1.06)' : 'scale(1)',
           }}
         />
       )}
-      {/* Subtle shimmer on hover */}
+
+      {/* Shimmer overlay */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
-          background: `linear-gradient(135deg, rgba(232,112,8,0.12) 0%, transparent 100%)`,
+          background: `linear-gradient(135deg, rgba(238, 223, 204, 0.1) 0%, transparent 100%)`,
           opacity: hovered ? 1 : 0,
           transition: 'opacity 0.3s ease',
           pointerEvents: 'none',
@@ -121,208 +146,60 @@ function GalleryPhoto({ item }) {
 }
 
 export default function Experiencia() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  const nextImage = (e) => {
-    e.stopPropagation();
-    setCurrentIndex((prev) => (prev + 1) % modalImages.length);
-  };
-  
-  const prevImage = (e) => {
-    e.stopPropagation();
-    setCurrentIndex((prev) => (prev - 1 + modalImages.length) % modalImages.length);
-  };
-
   return (
-    <section id="experiencia" style={{ background: '#0F1316', padding: '6rem 1.5rem', overflow: 'hidden' }}>
+    <section id="galeria" style={{ background: '#0A130D', padding: '7rem 1.5rem', position: 'relative' }}>
+      {/* Compatibility anchor for old #experiencia links */}
+      <div id="experiencia" style={{ position: 'absolute', top: 0 }} />
+
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-          <h2 className="section-title gold-underline" style={{ display: 'inline-block', paddingBottom: '0.8rem' }}>
-            EXPERIENCIA GISELA
+        <div style={{ textAlign: 'center', marginBottom: '3.8rem' }}>
+          <p
+            style={{
+              color: 'var(--vadano-secondary)',
+              fontSize: '0.88rem',
+              letterSpacing: '0.28em',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              marginBottom: '0.8rem',
+            }}
+          >
+            ✦ GALERÍA DE ESPACIOS ✦
+          </p>
+          <h2 className="section-title gold-underline" style={{ display: 'inline-block', paddingBottom: '0.9rem' }}>
+            Conocé el hotel
           </h2>
+          <p className="section-subtitle" style={{ color: '#EEDFCC', maxWidth: '700px', margin: '1.2rem auto 0' }}>
+            Recorré los espacios del hotel: habitaciones, áreas comunes y el exterior
+          </p>
         </div>
-        <p className="section-subtitle" style={{ color: '#FFFFFF', marginBottom: '3.5rem' }}>
-          Más que anteojos, una atención pensada para vos. Calidez, confianza y ese detalle personalizado que hace la diferencia en cada visita
-        </p>
 
-        {/* Gallery Grid — 2 columns */}
+        {/* Gallery Grid */}
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-            gap: '1.5rem',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+            gap: '1.8rem',
             marginBottom: '3rem',
           }}
           className="gallery-grid"
         >
-          {galleryItems.map(item => (
-            <GalleryPhoto key={item.id} item={item} />
+          {galleryItems.map((item) => (
+            <GalleryItem key={item.id} item={item} />
           ))}
         </div>
 
-        {/* CTA (Decorativo) -> Ahora funcional */}
+        {/* CTA */}
         <div style={{ textAlign: 'center' }}>
-          <button className="gold-pill-btn" id="ver-galeria"
-             type="button"
-             onClick={() => setIsModalOpen(true)}
-             style={{ padding: '0.85rem 2.5rem', fontSize: '0.85rem', cursor: 'pointer' }}>
-            VER GALERÍA
-          </button>
+          <a
+            href="#disponibilidad"
+            className="gold-pill-btn"
+            style={{ padding: '0.85rem 2.5rem', fontSize: '0.85rem', textDecoration: 'none' }}
+          >
+            CONSULTAR TU ESTADÍA
+          </a>
         </div>
       </div>
-
-      {isModalOpen && (
-        <div 
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'rgba(10, 10, 10, 0.85)',
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
-            zIndex: 9999,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '1.5rem',
-            animation: 'modalFadeIn 0.3s ease-out'
-          }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setIsModalOpen(false);
-          }}
-        >
-          {/* Close button */}
-          <button 
-            onClick={() => setIsModalOpen(false)}
-            style={{
-              position: 'absolute', top: '1.5rem', right: '1.5rem',
-              background: 'rgba(15,19,22,0.8)', border: `1px solid ${ACCENT}50`, 
-              color: ACCENT, cursor: 'pointer', borderRadius: '50%', padding: '0.6rem', 
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              transition: 'all 0.3s', zIndex: 10000, backdropFilter: 'blur(4px)',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = ACCENT; e.currentTarget.style.color = '#fff'; e.currentTarget.style.transform = 'scale(1.1)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(15,19,22,0.8)'; e.currentTarget.style.color = ACCENT; e.currentTarget.style.transform = 'scale(1)'; }}
-          >
-            <X size={24} />
-          </button>
-          
-          {/* Main Card */}
-          <div className="modal-card">
-            
-            {/* Image Container */}
-            <div style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '1.5rem' }}>
-              
-              <button onClick={prevImage} style={{
-                  position: 'absolute', top: '50%', transform: 'translateY(-50%)', left: '-15px', background: 'rgba(15,19,22,0.8)', border: `1px solid ${ACCENT}50`, color: ACCENT,
-                  cursor: 'pointer', padding: '0.6rem', borderRadius: '50%', zIndex: 1, backdropFilter: 'blur(4px)',
-                  transition: 'all 0.3s', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center'
-                }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(15,19,22,1)'; e.currentTarget.style.borderColor = ACCENT; e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(15,19,22,0.8)'; e.currentTarget.style.borderColor = `${ACCENT}50`; e.currentTarget.style.transform = 'translateY(-50%) scale(1)'; }}
-              >
-                <ChevronLeft size={28} />
-              </button>
-              
-              <img 
-                key={currentIndex}
-                src={modalImages[currentIndex]} 
-                alt={`Óptica Gisela Santa Fe - Experiencia y galería de anteojos ${currentIndex + 1}`} 
-                className="modal-main-image"
-              />
-              
-              <button onClick={nextImage} style={{
-                  position: 'absolute', top: '50%', transform: 'translateY(-50%)', right: '-15px', background: 'rgba(15,19,22,0.8)', border: `1px solid ${ACCENT}50`, color: ACCENT,
-                  cursor: 'pointer', padding: '0.6rem', borderRadius: '50%', zIndex: 1, backdropFilter: 'blur(4px)',
-                  transition: 'all 0.3s', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center'
-                }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(15,19,22,1)'; e.currentTarget.style.borderColor = ACCENT; e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(15,19,22,0.8)'; e.currentTarget.style.borderColor = `${ACCENT}50`; e.currentTarget.style.transform = 'translateY(-50%) scale(1)'; }}
-              >
-                <ChevronRight size={28} />
-              </button>
-            </div>
-            
-            {/* Pagination Dots */}
-            <div style={{ display: 'flex', gap: '8px', marginTop: '0.5rem' }}>
-              {modalImages.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={(e) => { e.stopPropagation(); setCurrentIndex(idx); }}
-                  style={{
-                    width: currentIndex === idx ? '24px' : '8px',
-                    height: '8px',
-                    borderRadius: '4px',
-                    backgroundColor: currentIndex === idx ? ACCENT : 'rgba(255,255,255,0.3)',
-                    border: 'none',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    padding: 0
-                  }}
-                  onMouseEnter={e => { if(currentIndex !== idx) e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.6)'; }}
-                  onMouseLeave={e => { if(currentIndex !== idx) e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.3)'; }}
-                  aria-label={`Ir a la imagen ${idx + 1}`}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      <style>{`
-        @media (max-width: 600px) {
-          .gallery-grid { grid-template-columns: 1fr !important; }
-        }
-        
-        .modal-card {
-          background: #121517;
-          border: 1px solid rgba(255,255,255,0.05);
-          border-radius: 24px;
-          padding: 1.5rem;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          width: 92%;
-          box-shadow: 0 24px 60px rgba(0,0,0,0.6);
-          animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        
-        .modal-main-image {
-          max-height: 70vh;
-          width: 100%;
-          object-fit: contain;
-          border-radius: 16px;
-          box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-          animation: imageFade 0.25s ease-out;
-        }
-
-        @media (min-width: 768px) {
-          .modal-card {
-            width: 60%;
-            max-width: 1200px;
-          }
-          .modal-main-image {
-            max-height: 80vh;
-          }
-        }
-
-        @keyframes modalFadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        
-        @keyframes modalSlideUp {
-          from { opacity: 0; transform: translateY(30px) scale(0.95); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        
-        @keyframes imageFade {
-          from { opacity: 0.5; transform: scale(0.98); }
-          to { opacity: 1; transform: scale(1); }
-        }
-      `}</style>
     </section>
   );
 }

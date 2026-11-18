@@ -1,1061 +1,562 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { X, ChevronLeft, ChevronRight, Search } from 'lucide-react';
+// src/components/MenuDestacado.jsx
+import React, { useState } from 'react';
+import { ShoppingBag, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { useStore } from '../context/StoreContext';
+import ProductDetailModal from './ProductDetailModal';
 
-const ACCENT = '#E87008';
 
-function useNearViewport(ref, rootMargin = '300px 0px') {
-  const [isNear, setIsNear] = useState(false);
+const ACCENT = 'var(--vadano-primary)';
+const ACCENT2 = 'var(--vadano-secondary)';
 
-  useEffect(() => {
-    if (!ref.current) return;
-    if (typeof window === 'undefined' || !('IntersectionObserver' in window)) {
-      setIsNear(true);
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsNear(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin }
-    );
-
-    observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [ref, rootMargin]);
-
-  return isNear;
-}
-
-const originalDishes = [
-  {
-    id: 'black-red',
-    name: 'Black & Red',
-    price: '',
-    tag: 'Diseño',
-    categories: ['recetados', 'clip-on'],
-    description: 'Armazón negro con detalles rojos en las patillas, de estilo moderno y llamativo.',
-    images: [
-      'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791568653/5_ek6eve.jpg',
-      'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791568652/8_lqmy5d.jpg',
-      'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791568649/6_sd4enp.jpg'
-    ]
-  },
-  {
-    id: 'blue-orange',
-    name: 'Blue Orange',
-    price: '',
-    tag: 'Diseño',
-    categories: ['recetados', 'clip-on'],
-    description: 'Armazón geométrico en azul petróleo con detalles naranja y patillas estampadas. Un diseño original, colorido y moderno para destacar tu estilo.',
-    images: [
-      'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791575206/11_exsxh1.jpg',
-      'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791575206/7_w0tzfu.jpg',
-      'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791575206/10_fwqzpy.jpg'
-    ]
-  },
-  {
-    id: 'black-gold',
-    name: 'Black Gold',
-    price: '',
-    tag: 'Diseño',
-    categories: ['recetados', 'sol'],
-    description: 'Armazón rectangular en negro y carey oscuro con detalles dorados. Un diseño clásico, elegante y sofisticado.',
-    images: [
-      'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791571143/34_lvtnot.jpg',
-      'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791571143/29_cqsmzq.jpg',
-      'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791571143/33_pxoo4t.jpg'
-    ]
-  },
-  {
-    id: 'green-contrast',
-    name: 'Green Contrast',
-    price: '',
-    tag: 'Diseño',
-    categories: ['clip-on', 'sol'],
-    description: 'Armazón geométrico en tono ámbar translúcido con detalles verde neón y patillas estampadas. Un diseño audaz, moderno y lleno de personalidad.',
-    images: [
-      'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791570539/12_ekleha.jpg',
-      'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791570538/15_i0hqwj.jpg',
-      'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791570537/14_wva2un.jpg'
-    ]
-  },
-  {
-    id: 'gray-leopard',
-    name: 'Gray Leopard',
-    price: '',
-    tag: 'Diseño',
-    categories: ['recetados'],
-    description: 'Armazón rectangular en gris translúcido con detalles estilo animal print. Un diseño moderno, elegante y con mucha personalidad.',
-    images: [
-      'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791570737/24_uxcnv9.jpg',
-      'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791570737/23_oujqi8.jpg',
-      'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791570736/21_dm9zfz.jpg'
-    ]
-  },
-  {
-    id: 'green-crystal',
-    name: 'Green Crystal',
-    price: '',
-    tag: 'Diseño',
-    categories: ['recetados', 'clip-on'],
-    description: 'Armazón rectangular translúcido en tonos verde y gris, con un diseño moderno, elegante y versátil.',
-    images: [
-      'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791570953/30_vcai8f.jpg',
-      'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791570952/31_hpkij1.jpg',
-      'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791570952/32_cg3dof.jpg'
-    ]
-  }
-];
-
-const fullCatalogModels = [
-  {
-    id: 'full-crystal-iridiscente',
-    name: 'Crystal Iridiscente',
-    price: '',
-    tag: 'Diseño',
-    categories: ['sol', 'recetados'],
-    description: 'Armazón geométrico translúcido con reflejos iridiscentes, un diseño moderno, elegante y llamativo.',
-    images: [
-      'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791570275/16_waapuv.jpg',
-      'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791570274/13_y3otk4.jpg',
-      'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791570275/9_jqedrl.jpg'
-    ]
-  },
-  {
-    id: 'brown-oversize',
-    name: 'Brown Oversize',
-    price: '',
-    tag: 'Diseño',
-    categories: ['sol'],
-    description: 'Armazón grande en tono marrón carey, con un diseño elegante, moderno y sofisticado.',
-    images: [
-      'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791571667/28_zjlbf5.jpg',
-      'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791571667/27_bmuron.jpg',
-      'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791571666/26_qcnxde.jpg'
-    ]
-  }
-];
-
-const cleanCloudinaryUrl = (url) => {
-  if (!url || !url.includes('cloudinary.com')) return url;
-  const match = url.match(/(https:\/\/res\.cloudinary\.com\/[^\/]+\/image\/upload\/)(.*)/);
-  if (!match) return url;
-  const prefix = match[1];
-  const rest = match[2];
-  const versionIndex = rest.search(/v\d+\//);
-  if (versionIndex !== -1) {
-    return prefix + rest.slice(versionIndex);
-  }
-  return url;
-};
-
-const optimizeImageUrl = (url, width = 800) => {
-  if (!url || !url.includes('cloudinary.com')) return url;
-  const base = cleanCloudinaryUrl(url);
-  return base.replace('/upload/', `/upload/f_auto,q_auto:good,w_${width},c_limit/`);
-};
-
-const getCloudinarySrcSet = (url) => {
-  if (!url || !url.includes('cloudinary.com')) return undefined;
-  const base = cleanCloudinaryUrl(url);
-  return [
-    `${base.replace('/upload/', '/upload/f_auto,q_auto:good,w_400,c_limit/')} 400w`,
-    `${base.replace('/upload/', '/upload/f_auto,q_auto:good,w_600,c_limit/')} 600w`,
-    `${base.replace('/upload/', '/upload/f_auto,q_auto:good,w_800,c_limit/')} 800w`,
-    `${base.replace('/upload/', '/upload/f_auto,q_auto:good,w_1000,c_limit/')} 1000w`,
-  ].join(', ');
-};
-
-const getPlaceholderUrl = (url) => {
-  if (!url || !url.includes('cloudinary.com')) return '';
-  const base = cleanCloudinaryUrl(url);
-  return base.replace('/upload/', '/upload/f_auto,q_auto:low,w_30,c_limit/');
-};
-
-const OriginalDishCard = React.memo(function OriginalDishCard({ dish, isPriority = false }) {
-  const cardRef = useRef(null);
-  const near = useNearViewport(cardRef, '350px 0px');
-  const isNearViewport = isPriority || near;
+function DishCard({ dish, onOpenModal, onAddToCart, onBuyNow }) {
   const [hovered, setHovered] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [justAdded, setJustAdded] = useState(false);
+
+  const isOutOfStock = Number(dish.stock) <= 0;
+
+  const formatPrice = (val) => {
+    return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(val || 0);
+  };
+
+  const handleAdd = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isOutOfStock) return;
+    onOpenModal(dish, 'quick_add');
+  };
 
   return (
     <div
-      ref={cardRef}
-      className="catalog-model-card"
+      id={`dish-${dish.id}`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: '#181F25',
+        background: '#000000',
         borderRadius: '18px',
         overflow: 'hidden',
-        border: `1.5px solid ${ACCENT}`,
+        border: `1px solid ${hovered ? 'var(--vadano-primary)' : 'rgba(255, 255, 255, 0.2)'}`,
         transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease',
         transform: hovered ? 'translateY(-8px)' : 'translateY(0)',
         boxShadow: hovered
-          ? `0 20px 50px rgba(232,112,8,0.18), 0 0 0 1px rgba(232,112,8,0.4)`
+          ? `0 20px 50px rgba(255, 255, 255, 0.2), 0 0 0 1px var(--vadano-primary)`
           : '0 4px 20px rgba(0,0,0,0.35)',
-        cursor: 'default',
+        cursor: 'pointer',
         zIndex: hovered ? 10 : 1,
         position: 'relative',
-        height: '520px',
         display: 'flex',
         flexDirection: 'column',
-        contain: 'layout paint',
+        height: '100%',
       }}
     >
-      <div 
-        className="catalog-image-container"
-        style={{ 
-          height: '312px', flexShrink: 0, overflow: 'hidden', position: 'relative',
-          backgroundColor: '#181F25',
-          contain: 'strict'
+      {/* ── Photo ── */}
+      <div
+        style={{
+          width: '100%',
+          aspectRatio: '1 / 1',
+          flexShrink: 0,
+          overflow: 'hidden',
+          position: 'relative',
+          backgroundColor: '#000000',
         }}
       >
-        {/* Shimmer Placeholder */}
-        <div 
-          className="catalog-placeholder-shimmer"
+        <img
+          src={dish.img}
+          alt={dish.name}
+          decoding="async"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center',
+            display: 'block',
+            transition: 'transform 0.45s ease',
+            transform: hovered ? 'scale(1.04)' : 'scale(1)',
+            filter: isOutOfStock ? 'grayscale(70%) opacity(0.7)' : 'none',
+          }}
+        />
+        {/* Hover shimmer */}
+        <div
           style={{
             position: 'absolute',
             inset: 0,
-            background: 'linear-gradient(90deg, #181F25 0%, #20272F 50%, #181F25 100%)',
-            backgroundSize: '200% 100%',
-            animation: 'placeholderShimmer 1.8s infinite ease-in-out',
-            zIndex: 0,
+            background: `linear-gradient(to top, rgba(255, 255, 255, 0.12), transparent)`,
+            opacity: hovered ? 1 : 0,
+            transition: 'opacity 0.35s ease',
             pointerEvents: 'none',
-            opacity: isLoaded ? 0 : 1,
-            transition: 'opacity 0.4s ease'
           }}
         />
 
-        {/* LQIP Micro-placeholder */}
-        {isNearViewport && dish.img && (
-          <img
-            src={getPlaceholderUrl(dish.img)}
-            alt=""
-            aria-hidden="true"
+        {/* Tag badge or Out of stock badge */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '12px',
+            left: '12px',
+            background: isOutOfStock ? 'rgba(239, 68, 68, 0.85)' : 'rgba(0, 0, 0, 0.75)',
+            backdropFilter: 'blur(8px)',
+            borderRadius: '6px',
+            padding: '4px 10px',
+            color: isOutOfStock ? '#ffffff' : 'var(--vadano-primary)',
+            fontSize: '0.62rem',
+            fontWeight: 700,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            border: isOutOfStock ? '1px solid #EF4444' : '1px solid var(--vadano-primary)',
+          }}
+        >
+          {isOutOfStock ? 'SIN STOCK' : dish.tag || 'COLECCIÓN'}
+        </div>
+
+        {/* Category label */}
+        {dish.category && (
+          <div
             style={{
               position: 'absolute',
-              inset: 0,
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              objectPosition: 'center',
-              filter: 'blur(10px)',
-              transform: 'scale(1.04)',
-              opacity: isLoaded ? 0 : 0.85,
-              transition: 'opacity 0.4s ease',
-              zIndex: 0,
-              pointerEvents: 'none'
+              top: '12px',
+              right: '12px',
+              background: 'rgba(0, 0, 0, 0.65)',
+              backdropFilter: 'blur(6px)',
+              borderRadius: '6px',
+              padding: '4px 8px',
+              color: '#D1D5DB',
+              fontSize: '0.58rem',
+              fontWeight: 600,
+              textTransform: 'uppercase',
+              border: '1px solid rgba(255,255,255,0.15)',
             }}
-          />
+          >
+            {dish.category}
+          </div>
         )}
-
-        {isNearViewport && (
-          <img
-            src={optimizeImageUrl(dish.img, 800)}
-            srcSet={getCloudinarySrcSet(dish.img)}
-            sizes="(max-width: 600px) 92vw, (max-width: 960px) 46vw, 360px"
-            alt={`${dish.name} - Anteojos en Óptica Gisela Santa Fe`}
-            loading={isPriority ? "eager" : "lazy"}
-            decoding="async"
-            fetchPriority={isPriority ? "high" : "low"}
-            onLoad={() => setIsLoaded(true)}
-            style={{
-              width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block',
-              transition: 'opacity 0.4s ease, transform 0.45s ease', transform: hovered ? 'scale(1.05)' : 'scale(1)',
-              opacity: isLoaded ? 1 : 0,
-              pointerEvents: 'none',
-              position: 'relative',
-              zIndex: 1
-            }}
-          />
-        )}
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: `linear-gradient(to top, rgba(232,112,8,0.15), transparent)`,
-          opacity: hovered ? 1 : 0, transition: 'opacity 0.35s ease', pointerEvents: 'none',
-          zIndex: 2
-        }} />
       </div>
 
-      <div style={{
-        flex: 1, background: '#181F25', borderTop: `1px solid rgba(255,255,255,0.08)`,
-        padding: '1.4rem 1.6rem 1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', overflow: 'hidden',
-      }}>
-        <h3 className="font-serif" style={{ fontSize: '1.2rem', fontWeight: 700, color: '#ffffff', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.5rem', lineHeight: 1.2, flexShrink: 0 }}>
+      {/* ── Text area ── */}
+      <div
+        style={{
+          flex: 1,
+          background: '#000000',
+          borderTop: `1px solid rgba(255, 255, 255, 0.18)`,
+          padding: '1.2rem 1.4rem 1.3rem',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          textAlign: 'center',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Name */}
+        <h3
+          className="font-serif"
+          style={{
+            fontSize: '1.15rem',
+            fontWeight: 700,
+            color: '#ffffff',
+            textTransform: 'uppercase',
+            letterSpacing: '0.06em',
+            marginBottom: '0.3rem',
+            lineHeight: 1.2,
+            flexShrink: 0,
+          }}
+        >
           {dish.name}
         </h3>
-        {dish.price && (
-          <span style={{ color: ACCENT, fontSize: '1.25rem', fontWeight: 700, fontFamily: "'Playfair Display', serif", marginBottom: '0.6rem', flexShrink: 0, display: 'block' }}>
-            {dish.price}
+
+        {/* Price display */}
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.4rem', flexShrink: 0 }}>
+          <span style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--vadano-primary)' }}>
+            {formatPrice(dish.price)}
           </span>
-        )}
-        <p style={{ color: 'rgba(255,255,255,0.78)', fontSize: '0.82rem', lineHeight: 1.6, margin: 0, flexGrow: 1, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
+          {dish.originalPrice > dish.price && (
+            <span style={{ fontSize: '0.8rem', color: '#6B7280', textDecoration: 'line-through' }}>
+              {formatPrice(dish.originalPrice)}
+            </span>
+          )}
+        </div>
+
+        {/* Decorative line */}
+        <div
+          style={{
+            width: '32px',
+            height: '2px',
+            background: `linear-gradient(90deg, var(--vadano-primary), var(--vadano-secondary))`,
+            marginBottom: '0.5rem',
+            flexShrink: 0,
+            borderRadius: '1px',
+          }}
+        />
+
+        {/* Description */}
+        <p
+          style={{
+            color: '#FFFFFF',
+            opacity: 1,
+            fontSize: '0.78rem',
+            lineHeight: 1.5,
+            margin: 0,
+            flexGrow: 1,
+            overflow: 'hidden',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+          }}
+        >
           {dish.description}
         </p>
-        <a
-          href="https://wa.me/5493426487738?text=Hola%2C%20quisiera%20consultar%20por%20este%20anteojo."
-          target="_blank" rel="noopener noreferrer"
+
+        {/* Action Buttons */}
+        <div
           style={{
-            marginTop: '0.9rem', flexShrink: 0, background: hovered ? '#D06000' : ACCENT,
-            border: 'none', color: '#ffffff', borderRadius: '8px', padding: '0.55rem 1rem', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer', transition: 'background 0.2s ease, transform 0.2s ease', width: '100%', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box',
+            display: 'flex',
+            gap: '0.5rem',
+            width: '100%',
+            marginTop: '0.8rem',
+            flexShrink: 0,
           }}
         >
-          CONSULTAR
-        </a>
-      </div>
-    </div>
-  );
-});
-
-const CatalogModelCard = React.memo(function CatalogModelCard({ model, isPriority = false }) {
-  const cardRef = useRef(null);
-  const near = useNearViewport(cardRef, '350px 0px');
-  const isNearViewport = isPriority || near;
-  const [hovered, setHovered] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [renderedIndices, setRenderedIndices] = useState(() => new Set([0]));
-  const [loadedMap, setLoadedMap] = useState({});
-
-  const handleImageLoaded = (idx) => {
-    setLoadedMap(prev => (prev[idx] ? prev : { ...prev, [idx]: true }));
-  };
-
-  useEffect(() => {
-    if (hovered || currentIndex !== 0) {
-      setRenderedIndices(prev => {
-        if (prev.size === model.images.length) return prev;
-        return new Set(model.images.map((_, i) => i));
-      });
-    }
-  }, [hovered, currentIndex, model.images.length]);
-
-  useEffect(() => {
-    if (!isNearViewport) return;
-
-    const loadRemaining = () => {
-      setRenderedIndices(new Set(model.images.map((_, i) => i)));
-    };
-
-    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-      const handle = window.requestIdleCallback(loadRemaining, { timeout: 2500 });
-      return () => window.cancelIdleCallback(handle);
-    } else {
-      const timer = setTimeout(loadRemaining, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [isNearViewport, model.images.length]);
-
-  const nextImage = (e) => {
-    e.stopPropagation();
-    setRenderedIndices(new Set(model.images.map((_, i) => i)));
-    setCurrentIndex((prev) => (prev + 1) % model.images.length);
-  };
-  
-  const prevImage = (e) => {
-    e.stopPropagation();
-    setRenderedIndices(new Set(model.images.map((_, i) => i)));
-    setCurrentIndex((prev) => (prev - 1 + model.images.length) % model.images.length);
-  };
-
-  const textWhatsApp = encodeURIComponent(`Hola, quisiera consultar por este anteojo.`);
-
-  return (
-    <div
-      ref={cardRef}
-      className="catalog-model-card"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        background: '#181F25', borderRadius: '18px', overflow: 'hidden',
-        border: `1.5px solid ${ACCENT}`,
-        transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease',
-        transform: hovered ? 'translateY(-8px)' : 'translateY(0)',
-        boxShadow: hovered ? `0 20px 50px rgba(232,112,8,0.18), 0 0 0 1px rgba(232,112,8,0.4)` : '0 4px 20px rgba(0,0,0,0.35)',
-        position: 'relative', display: 'flex', flexDirection: 'column', height: '520px',
-        contain: 'layout paint',
-      }}
-    >
-      <div 
-        className="catalog-image-container"
-        style={{ 
-          height: '312px', flexShrink: 0, overflow: 'hidden', position: 'relative', 
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          backgroundColor: '#181F25',
-          contain: 'strict'
-        }}
-      >
-        {/* Shimmer Placeholder */}
-        <div 
-          className="catalog-placeholder-shimmer"
-          style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'linear-gradient(90deg, #181F25 0%, #20272F 50%, #181F25 100%)',
-            backgroundSize: '200% 100%',
-            animation: 'placeholderShimmer 1.8s infinite ease-in-out',
-            zIndex: 0,
-            pointerEvents: 'none',
-            opacity: loadedMap[currentIndex] ? 0 : 1,
-            transition: 'opacity 0.4s ease'
-          }}
-        />
-
-        {/* LQIP Micro-placeholder */}
-        {isNearViewport && model.images[currentIndex] && (
-          <img
-            src={getPlaceholderUrl(model.images[currentIndex])}
-            alt=""
-            aria-hidden="true"
+          <button
+            type="button"
+            onClick={handleAdd}
+            disabled={isOutOfStock}
             style={{
-              position: 'absolute',
-              inset: 0,
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              objectPosition: 'center',
-              filter: 'blur(10px)',
-              transform: 'scale(1.04)',
-              opacity: loadedMap[currentIndex] ? 0 : 0.85,
-              transition: 'opacity 0.4s ease',
-              zIndex: 0,
-              pointerEvents: 'none'
+              flex: 1.4,
+              background: isOutOfStock
+                ? 'rgba(255,255,255,0.05)'
+                : justAdded
+                ? '#10B981'
+                : 'var(--vadano-primary)',
+              border: isOutOfStock ? '1px solid rgba(255,255,255,0.1)' : '1px solid var(--vadano-primary)',
+              color: isOutOfStock ? '#6B7280' : '#FFFFFF',
+              borderRadius: '8px',
+              padding: '0.55rem 0.6rem',
+              fontSize: '0.72rem',
+              fontWeight: 700,
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase',
+              cursor: isOutOfStock ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s ease',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.35rem',
             }}
-          />
-        )}
+            onMouseEnter={(e) => {
+              if (!isOutOfStock && !justAdded) {
+                e.currentTarget.style.background = 'var(--vadano-primary-hover)';
+                e.currentTarget.style.borderColor = 'var(--vadano-primary-hover)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isOutOfStock && !justAdded) {
+                e.currentTarget.style.background = 'var(--vadano-primary)';
+                e.currentTarget.style.borderColor = 'var(--vadano-primary)';
+              }
+            }}
+          >
+            {justAdded ? (
+              <>
+                <Check size={14} />
+                <span>AGREGADO</span>
+              </>
+            ) : isOutOfStock ? (
+              <span>AGOTADO</span>
+            ) : (
+              <>
+                <ShoppingBag size={14} />
+                <span>COMPRAR</span>
+              </>
+            )}
+          </button>
 
-        <button onClick={prevImage} style={{
-            position: 'absolute', top: '50%', transform: 'translateY(-50%)', left: '10px', background: 'rgba(15,19,22,0.6)', border: `1px solid ${ACCENT}50`, color: ACCENT,
-            cursor: 'pointer', padding: '0.4rem', borderRadius: '50%', zIndex: 20, backdropFilter: 'blur(2px)', transition: 'all 0.3s',
-            display: 'flex', alignItems: 'center', justifyContent: 'center'
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(15,19,22,0.95)'; e.currentTarget.style.borderColor = ACCENT; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(15,19,22,0.6)'; e.currentTarget.style.borderColor = `${ACCENT}50`; }}
-        >
-          <ChevronLeft size={20} />
-        </button>
-
-        {isNearViewport && model.images.map((imgSrc, idx) => {
-          if (!renderedIndices.has(idx)) return null;
-          const isVisible = idx === currentIndex;
-          const isImgPriority = isPriority && idx === 0;
-
-          return (
-            <img 
-              key={idx} 
-              src={optimizeImageUrl(imgSrc, 800)} 
-              srcSet={getCloudinarySrcSet(imgSrc)}
-              sizes="(max-width: 600px) 92vw, (max-width: 960px) 46vw, 360px"
-              alt={`${model.name} - Anteojos en Óptica Gisela Santa Fe - Vista ${idx + 1}`} 
-              loading={isImgPriority ? "eager" : "lazy"} 
-              decoding="async"
-              fetchPriority={isImgPriority ? "high" : "low"}
-              onLoad={() => handleImageLoaded(idx)}
-              style={{ 
-                position: 'absolute', inset: 0, width: '100%', height: '100%', 
-                objectFit: 'cover', objectPosition: 'center', display: 'block', 
-                opacity: isVisible ? 1 : 0,
-                transition: 'opacity 0.4s ease-in-out, transform 0.45s ease', 
-                transform: hovered && isVisible ? 'scale(1.05)' : 'scale(1)',
-                zIndex: isVisible ? 2 : 1,
-                pointerEvents: 'none'
-              }} 
-            />
-          );
-        })}
-        
-        <button onClick={nextImage} style={{
-            position: 'absolute', top: '50%', transform: 'translateY(-50%)', right: '10px', background: 'rgba(15,19,22,0.6)', border: `1px solid ${ACCENT}50`, color: ACCENT,
-            cursor: 'pointer', padding: '0.4rem', borderRadius: '50%', zIndex: 20, backdropFilter: 'blur(2px)', transition: 'all 0.3s',
-            display: 'flex', alignItems: 'center', justifyContent: 'center'
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(15,19,22,0.95)'; e.currentTarget.style.borderColor = ACCENT; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(15,19,22,0.6)'; e.currentTarget.style.borderColor = `${ACCENT}50`; }}
-        >
-          <ChevronRight size={20} />
-        </button>
-
-        <div style={{ position: 'absolute', bottom: '15px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '8px', zIndex: 15 }}>
-          {model.images.map((_, idx) => (
-            <div
-              key={idx}
-              onClick={(e) => { 
-                e.stopPropagation(); 
-                setRenderedIndices(new Set(model.images.map((_, i) => i)));
-                setCurrentIndex(idx); 
-              }}
-              style={{
-                width: '8px', height: '8px', borderRadius: '50%',
-                background: currentIndex === idx ? ACCENT : 'rgba(255,255,255,0.4)',
-                cursor: 'pointer', transition: 'background 0.3s ease'
-              }}
-            />
-          ))}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            style={{
+              flex: 1,
+              background: 'transparent',
+              border: '1px solid var(--vadano-secondary)',
+              color: '#FFFFFF',
+              borderRadius: '8px',
+              padding: '0.55rem 0.6rem',
+              fontSize: '0.72rem',
+              fontWeight: 700,
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'var(--vadano-primary)';
+              e.currentTarget.style.borderColor = 'var(--vadano-primary)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.borderColor = 'var(--vadano-secondary)';
+            }}
+          >
+            VER DETALLES
+          </button>
         </div>
-
-        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to top, rgba(232,112,8,0.15), transparent)`, opacity: hovered ? 1 : 0, transition: 'opacity 0.35s ease', pointerEvents: 'none', zIndex: 5 }} />
-      </div>
-
-      <div style={{ flex: 1, background: '#181F25', borderTop: `1px solid rgba(255,255,255,0.08)`, padding: '1.4rem 1.6rem 1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-        <h3 className="font-serif" style={{ fontSize: '1.2rem', fontWeight: 700, color: '#ffffff', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.5rem', lineHeight: 1.2 }}>{model.name}</h3>
-        <p style={{ color: 'rgba(255,255,255,0.78)', fontSize: '0.82rem', lineHeight: 1.6, margin: 0, flexGrow: 1, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{model.description}</p>
-        
-        <a
-          href={`https://wa.me/5493426487738?text=${textWhatsApp}`}
-          target="_blank" rel="noopener noreferrer"
-          style={{
-            marginTop: '0.9rem', flexShrink: 0, background: hovered ? '#D06000' : ACCENT,
-            border: 'none', color: '#ffffff', borderRadius: '8px', padding: '0.55rem 1rem', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer', transition: 'background 0.2s ease, transform 0.2s ease', width: '100%', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', boxSizing: 'border-box',
-          }}
-        >
-          CONSULTAR
-        </a>
       </div>
     </div>
   );
-});
+}
 
-const extraImages = [
-  'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791576087/2_w8gmaa.jpg',
-  'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791576089/3_tv9h19.jpg',
-  'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791576076/5_m9mvl5.jpg',
-  'https://res.cloudinary.com/dkc39tw6r/image/upload/v1791576077/6_otcq5m.jpg'
-];
+export default function MenuDestacado() {
+  const {
+    filteredProducts,
+    categories,
+    selectedCategory,
+    setSelectedCategory,
+    addToCart,
+    startDirectCheckout,
+    config,
+    setSearchQuery,
+  } = useStore();
 
-const ExtraGalleryCard = React.memo(function ExtraGalleryCard({ images }) {
-  const cardRef = useRef(null);
-  const isNearViewport = useNearViewport(cardRef, '350px 0px');
-  const [hovered, setHovered] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [renderedIndices, setRenderedIndices] = useState(() => new Set([0]));
-  const [loadedMap, setLoadedMap] = useState({});
+  const [selectedDish, setSelectedDish] = useState(null);
+  const [modalMode, setModalMode] = useState('detail'); // 'detail' | 'quick_add'
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [selectedColor, setSelectedColor] = useState(null);
+  const [showAllCategories, setShowAllCategories] = useState(false);
 
-  const handleImageLoaded = (idx) => {
-    setLoadedMap(prev => (prev[idx] ? prev : { ...prev, [idx]: true }));
+  const INITIAL_VISIBLE_COUNT = 4;
+  const mainCategories = categories.slice(0, INITIAL_VISIBLE_COUNT);
+  const extraCategories = categories.slice(INITIAL_VISIBLE_COUNT);
+
+  const displayedCategories = showAllCategories
+    ? categories
+    : extraCategories.includes(selectedCategory)
+      ? [...mainCategories, selectedCategory]
+      : mainCategories;
+
+  const formatPrice = (val) => {
+    return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(val || 0);
   };
 
-  useEffect(() => {
-    if (hovered || currentIndex !== 0) {
-      setRenderedIndices(prev => {
-        if (prev.size === images.length) return prev;
-        return new Set(images.map((_, i) => i));
-      });
-    }
-  }, [hovered, currentIndex, images.length]);
-
-  useEffect(() => {
-    if (!isNearViewport) return;
-    const loadRemaining = () => {
-      setRenderedIndices(new Set(images.map((_, i) => i)));
-    };
-    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-      const handle = window.requestIdleCallback(loadRemaining, { timeout: 2500 });
-      return () => window.cancelIdleCallback(handle);
+  const handleOpenDishModal = (dish, mode = 'detail') => {
+    setSelectedDish(dish);
+    setModalMode(mode);
+    if (dish.sizes && dish.sizes.length > 0) {
+      setSelectedSize(dish.sizes[0]);
     } else {
-      const timer = setTimeout(loadRemaining, 1500);
-      return () => clearTimeout(timer);
+      setSelectedSize('37');
     }
-  }, [isNearViewport, images.length]);
-
-  const nextImage = (e) => {
-    e.stopPropagation();
-    setRenderedIndices(new Set(images.map((_, i) => i)));
-    setCurrentIndex((prev) => (prev + 1) % images.length);
+    const availableColors = dish.colors && dish.colors.length > 0 ? dish.colors : ['Negro', 'Blanco', 'Suela'];
+    setSelectedColor(availableColors[0]);
   };
-  
-  const prevImage = (e) => {
-    e.stopPropagation();
-    setRenderedIndices(new Set(images.map((_, i) => i)));
-    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+
+  const handleWhatsAppInquiry = (dish) => {
+    const phone = '5493844419650';
+    const text = `*¡Hola Óptica Ribes Bandera!* Quiero consultar disponibilidad de *${dish.name}* (Precio: ${formatPrice(dish.price)}) en talle ${selectedSize || 'U'}${selectedColor ? ` y color ${selectedColor}` : ''}. ¿Tienen stock en el local?`;
+    if (!phone) return;
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
   };
 
   return (
-    <div
-      ref={cardRef}
-      className="extra-gallery-card"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+    <section
+      id="menu"
       style={{
-        background: '#181F25', borderRadius: '18px', overflow: 'hidden',
-        border: `1.5px solid ${ACCENT}`,
-        transition: 'transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease',
-        transform: hovered ? 'translateY(-8px)' : 'translateY(0)',
-        boxShadow: hovered ? `0 20px 50px rgba(232,112,8,0.18), 0 0 0 1px rgba(232,112,8,0.4)` : '0 4px 20px rgba(0,0,0,0.35)',
-        position: 'relative', display: 'flex', flexDirection: 'column', height: '600px', width: '100%', maxWidth: '900px', margin: '0 auto',
-        contain: 'layout paint'
+        background: '#000000',
+        padding: '7rem 1.5rem',
+        position: 'relative',
       }}
     >
-      <div className="extra-gallery-wrapper" style={{ height: '100%', width: '100%', flexShrink: 0, overflow: 'hidden', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        
-        {/* Shimmer Placeholder */}
-        <div 
-          className="catalog-placeholder-shimmer"
-          style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'linear-gradient(90deg, #181F25 0%, #20272F 50%, #181F25 100%)',
-            backgroundSize: '200% 100%',
-            animation: 'placeholderShimmer 1.8s infinite ease-in-out',
-            zIndex: 0,
-            pointerEvents: 'none',
-            opacity: loadedMap[currentIndex] ? 0 : 1,
-            transition: 'opacity 0.4s ease'
-          }}
-        />
-
-        {/* Invisible image to naturally dictate the aspect ratio on mobile without forcing a fixed square */}
-        <img src={optimizeImageUrl(images[0], 800)} alt="" style={{ width: '100%', height: 'auto', visibility: 'hidden', display: 'block' }} className="extra-gallery-dummy" />
-
-        <button onClick={prevImage} style={{
-            position: 'absolute', top: '50%', transform: 'translateY(-50%)', left: '15px', background: 'rgba(15,19,22,0.8)', border: `1px solid ${ACCENT}50`, color: ACCENT,
-            cursor: 'pointer', padding: '0.6rem', borderRadius: '50%', zIndex: 20, backdropFilter: 'blur(4px)', transition: 'all 0.3s',
-            display: 'flex', alignItems: 'center', justifyContent: 'center'
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(15,19,22,1)'; e.currentTarget.style.borderColor = ACCENT; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(15,19,22,0.8)'; e.currentTarget.style.borderColor = `${ACCENT}50`; }}
-        >
-          <ChevronLeft size={28} />
-        </button>
-
-        {isNearViewport && images.map((imgSrc, idx) => {
-          if (!renderedIndices.has(idx)) return null;
-          const isVisible = idx === currentIndex;
-          return (
-            <img 
-              key={idx} 
-              className="extra-gallery-image"
-              src={optimizeImageUrl(imgSrc, 1000)} 
-              srcSet={getCloudinarySrcSet(imgSrc)}
-              sizes="(max-width: 768px) 94vw, 900px"
-              alt={`Más modelos y accesorios de anteojos - Óptica Gisela Santa Fe - Vista ${idx + 1}`} 
-              loading="lazy" 
-              decoding="async"
-              fetchPriority="low"
-              onLoad={() => handleImageLoaded(idx)}
-              style={{ 
-                position: 'absolute', inset: 0, width: '100%', height: '100%', 
-                objectFit: 'cover', objectPosition: 'center', display: 'block', 
-                opacity: isVisible ? 1 : 0,
-                transition: 'opacity 0.4s ease-in-out', 
-                zIndex: isVisible ? 2 : 1,
-                pointerEvents: 'none'
-              }} 
-            />
-          );
-        })}
-        
-        <button onClick={nextImage} style={{
-            position: 'absolute', top: '50%', transform: 'translateY(-50%)', right: '15px', background: 'rgba(15,19,22,0.8)', border: `1px solid ${ACCENT}50`, color: ACCENT,
-            cursor: 'pointer', padding: '0.6rem', borderRadius: '50%', zIndex: 20, backdropFilter: 'blur(4px)', transition: 'all 0.3s',
-            display: 'flex', alignItems: 'center', justifyContent: 'center'
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(15,19,22,1)'; e.currentTarget.style.borderColor = ACCENT; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(15,19,22,0.8)'; e.currentTarget.style.borderColor = `${ACCENT}50`; }}
-        >
-          <ChevronRight size={28} />
-        </button>
-
-        <div style={{ position: 'absolute', bottom: '20px', display: 'flex', gap: '8px', zIndex: 15 }}>
-          {images.map((_, idx) => (
-            <button
-              key={idx}
-              onClick={(e) => { 
-                e.stopPropagation(); 
-                setRenderedIndices(new Set(images.map((_, i) => i)));
-                setCurrentIndex(idx); 
-              }}
-              style={{
-                width: currentIndex === idx ? '24px' : '10px',
-                height: '10px', borderRadius: '5px',
-                backgroundColor: currentIndex === idx ? ACCENT : 'rgba(255,255,255,0.5)',
-                border: 'none', cursor: 'pointer', transition: 'all 0.3s ease', padding: 0
-              }}
-              aria-label={`Ir a la imagen ${idx + 1}`}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-});
-
-const FILTER_CATEGORIES = [
-  { id: 'todos', label: 'Todos' },
-  { id: 'recetados', label: 'Anteojos recetados' },
-  { id: 'sol', label: 'Anteojos de sol' },
-  { id: 'clip-on', label: 'Clip-on' },
-];
-
-export default function MenuDestacado({
-  searchQuery = '',
-  setSearchQuery = () => {},
-}) {
-  const [selectedCategory, setSelectedCategory] = useState('todos');
-  const [isFullCatalogOpen, setIsFullCatalogOpen] = useState(false);
-
-  const handleOpenCatalog = () => {
-    setIsFullCatalogOpen(!isFullCatalogOpen);
-  };
-
-  const allCatalogModels = [...originalDishes, ...fullCatalogModels];
-
-  const normalizedQuery = (searchQuery || '')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .trim();
-
-  const isSearching = Boolean(normalizedQuery);
-  const isCategoryFiltered = selectedCategory !== 'todos';
-
-  // Base list according to category selector
-  const categoryBaseModels = isCategoryFiltered
-    ? allCatalogModels.filter((item) => item.categories && item.categories.includes(selectedCategory))
-    : (isSearching ? allCatalogModels : originalDishes);
-
-  // If search query is present, filter further
-  const filteredDishes = isSearching
-    ? categoryBaseModels.filter((item) => {
-        const name = (item.name || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        const desc = (item.description || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        const tag = (item.tag || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        return name.includes(normalizedQuery) || desc.includes(normalizedQuery) || tag.includes(normalizedQuery);
-      })
-    : categoryBaseModels;
-
-  return (
-    <section id="menu" style={{ background: '#0F1316', padding: '7rem 1.5rem', position: 'relative', overflow: 'hidden' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
-          <p style={{ color: ACCENT, fontSize: '0.7rem', letterSpacing: '0.3em', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.8rem' }}>
-            ❖ COLECCIÓN EXCLUSIVA ❖
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+          <p
+            style={{
+              color: 'var(--vadano-primary)',
+              fontSize: '0.75rem',
+              letterSpacing: '0.3em',
+              fontWeight: 600,
+              textTransform: 'uppercase',
+              marginBottom: '0.8rem',
+            }}
+          >
+            ✦ LO MEJOR DE ÓPTICA RIBES BANDERA ✦
           </p>
           <h2 className="section-title gold-underline" style={{ display: 'inline-block', paddingBottom: '0.9rem' }}>
-            CATÁLOGO DESTACADO
+            PRODUCTOS DESTACADOS
           </h2>
           <p className="section-subtitle" style={{ color: '#FFFFFF' }}>
-            Descubrí nuestra selección, con calidad y estilo para cada mirada
+            Una selección de armazones y lentes para acompañar tu estilo y cuidar tu visión
           </p>
         </div>
 
-        {/* Professional and responsive category filter selector */}
+        {/* Category Pills Filter */}
         <div
-          className="catalog-filter-container"
-          role="tablist"
-          aria-label="Filtrar modelos de anteojos"
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '0.6rem',
+            flexWrap: 'wrap',
+            margin: '2rem 0 2.5rem',
+          }}
         >
-          {FILTER_CATEGORIES.map(category => {
-            const isSelected = selectedCategory === category.id;
+          {displayedCategories.map((cat) => {
+            const isActive = selectedCategory === cat;
             return (
               <button
-                key={category.id}
-                type="button"
-                role="tab"
-                aria-selected={isSelected}
-                className={`catalog-filter-btn ${isSelected ? 'active' : ''}`}
-                onClick={() => setSelectedCategory(category.id)}
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                style={{
+                  padding: '0.55rem 1.3rem',
+                  borderRadius: '50px',
+                  background: isActive ? 'var(--vadano-primary)' : '#000000',
+                  color: '#FFFFFF',
+                  border: `1px solid ${isActive ? 'var(--vadano-primary)' : 'rgba(255, 255, 255, 0.35)'}`,
+                  fontSize: '0.76rem',
+                  fontWeight: 700,
+                  letterSpacing: '0.06em',
+                  textTransform: 'uppercase',
+                  cursor: 'pointer',
+                  transition: 'all 0.25s ease',
+                  boxShadow: isActive ? '0 0 15px var(--vadano-primary-glow)' : 'none',
+                }}
+                onMouseEnter={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.background = 'rgba(217, 61, 98, 0.15)';
+                    e.currentTarget.style.borderColor = 'var(--vadano-primary)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.background = '#000000';
+                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.35)';
+                  }
+                }}
               >
-                {category.label}
+                {cat}
               </button>
             );
           })}
-        </div>
 
-        {/* Search feedback banner when filtering */}
-        {isSearching && (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '1rem',
-            backgroundColor: '#181F25',
-            border: `1.5px solid ${ACCENT}`,
-            borderRadius: '14px',
-            padding: '0.9rem 1.4rem',
-            margin: '0 0 1.5rem',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
-            animation: 'modalFadeIn 0.3s ease',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-              <div style={{
-                width: '32px', height: '32px', borderRadius: '50%',
-                background: 'rgba(232,112,8,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center'
-              }}>
-                <Search size={16} color={ACCENT} />
-              </div>
-              <span style={{ color: '#ffffff', fontSize: '0.92rem', fontWeight: 600 }}>
-                Filtrando por: <span style={{ color: ACCENT }}>"{searchQuery}"</span>
-                {isCategoryFiltered && (
-                  <span style={{ color: 'rgba(255,255,255,0.7)', fontWeight: 400, marginLeft: '6px' }}>
-                    en {FILTER_CATEGORIES.find(c => c.id === selectedCategory)?.label}
-                  </span>
-                )}
-              </span>
-              <span style={{
-                backgroundColor: 'rgba(232,112,8,0.12)',
-                color: ACCENT,
-                fontSize: '0.78rem',
-                fontWeight: 700,
-                padding: '0.22rem 0.65rem',
-                borderRadius: '9999px',
-                border: `1px solid ${ACCENT}40`
-              }}>
-                {filteredDishes.length} {filteredDishes.length === 1 ? 'modelo encontrado' : 'modelos encontrados'}
-              </span>
-            </div>
-
+          {categories.length > INITIAL_VISIBLE_COUNT && (
             <button
-              type="button"
-              onClick={() => setSearchQuery('')}
+              onClick={() => setShowAllCategories((prev) => !prev)}
+              aria-label={showAllCategories ? 'Ver menos categorías' : 'Ver más categorías'}
               style={{
-                background: 'rgba(255,255,255,0.06)',
-                border: `1px solid rgba(255,255,255,0.2)`,
-                color: '#ffffff',
-                borderRadius: '8px',
-                padding: '0.4rem 0.9rem',
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                letterSpacing: '0.05em',
+                padding: '0.55rem 1.25rem',
+                borderRadius: '50px',
+                background: showAllCategories ? 'rgba(255, 255, 255, 0.15)' : '#000000',
+                color: 'var(--vadano-primary)',
+                border: '1px solid var(--vadano-primary)',
+                fontSize: '0.76rem',
+                fontWeight: 700,
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
                 cursor: 'pointer',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '0.4rem',
-                transition: 'all 0.2s ease'
+                transition: 'all 0.25s ease',
               }}
-              onMouseEnter={e => {
-                e.currentTarget.style.borderColor = ACCENT;
-                e.currentTarget.style.color = ACCENT;
-                e.currentTarget.style.background = 'rgba(232,112,8,0.12)';
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.25)';
+                e.currentTarget.style.transform = 'translateY(-1px)';
               }}
-              onMouseLeave={e => {
-                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
-                e.currentTarget.style.color = '#ffffff';
-                e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = showAllCategories ? 'rgba(255, 255, 255, 0.15)' : '#000000';
+                e.currentTarget.style.transform = 'translateY(0)';
               }}
             >
-              <X size={14} />
-              Limpiar búsqueda
+              <span>{showAllCategories ? 'Ver menos' : '+ Más categorías'}</span>
+              {showAllCategories ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
             </button>
-          </div>
-        )}
+          )}
+        </div>
 
-        {/* Empty state if search returns 0 results */}
-        {isSearching && filteredDishes.length === 0 ? (
-          <div style={{
-            textAlign: 'center',
-            padding: '4rem 2rem',
-            backgroundColor: '#181F25',
-            borderRadius: '16px',
-            border: '1px solid rgba(255,255,255,0.08)',
-            margin: '2rem 0 3rem',
-            animation: 'modalFadeIn 0.3s ease',
-          }}>
-            <div style={{
-              width: '64px',
-              height: '64px',
-              borderRadius: '50%',
-              backgroundColor: 'rgba(232,112,8,0.12)',
-              border: `1.5px solid ${ACCENT}50`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 1.2rem'
-            }}>
-              <Search size={30} color={ACCENT} />
-            </div>
-            <h3 style={{ color: '#ffffff', fontSize: '1.4rem', marginBottom: '0.6rem', fontFamily: "'Playfair Display', serif" }}>
-              No encontramos modelos para "{searchQuery}"
-            </h3>
-            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.88rem', maxWidth: '480px', margin: '0 auto 1.6rem', lineHeight: 1.6 }}>
-              Intentá buscar por otro término o seleccioná otra categoría.
-            </p>
-            <button
-              type="button"
-              className="gold-pill-btn"
-              onClick={() => {
-                setSearchQuery('');
-                setSelectedCategory('todos');
-              }}
-              style={{ fontSize: '0.8rem', padding: '0.65rem 1.8rem' }}
-            >
-              Ver todos los modelos
-            </button>
-          </div>
-        ) : (
-          /* Models Grid */
-          <div 
-            key={selectedCategory}
-            className="menu-grid" 
-            style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(3, 1fr)', 
-              gap: '1.6rem', 
-              margin: isSearching ? '2rem 0 3rem' : '2.5rem 0 3rem',
-              animation: 'modalFadeIn 0.35s ease'
-            }}
-          >
-            {filteredDishes.map((dish, index) => (
-              dish.images ? (
-                <CatalogModelCard key={dish.id} model={dish} isPriority={index < 3} />
-              ) : (
-                <OriginalDishCard key={dish.id} dish={dish} isPriority={index < 3} />
-              )
-            ))}
-          </div>
-        )}
-
-        {!isSearching && !isCategoryFiltered && (
+        {/* Grid or Empty State */}
+        {filteredProducts.length > 0 ? (
           <>
-            {isFullCatalogOpen && (
-              <div style={{ animation: 'modalFadeIn 0.5s ease' }}>
-                <div style={{ textAlign: 'center', margin: '5rem 0 2rem' }}>
-                  <h2 className="section-title" style={{ display: 'inline-block', fontSize: '2rem', marginBottom: '0.6rem' }}>
-                    CATÁLOGO COMPLETO
-                  </h2>
-                  <div style={{ width: '80px', height: '2px', backgroundColor: ACCENT, margin: '0 auto' }}></div>
-                </div>
-                <div className="menu-grid full-catalog-flex" style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '1.6rem', marginBottom: '4rem' }}>
-                  {fullCatalogModels.map((model) => (
-                    <div key={model.id} className="catalog-centered-card">
-                      <CatalogModelCard model={model} isPriority={false} />
-                    </div>
-                  ))}
-                </div>
+            <div
+              className="menu-grid"
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: '1.6rem',
+                margin: '1.5rem 0 2.5rem',
+              }}
+            >
+              {filteredProducts.map((dish) => (
+                <DishCard
+                  key={dish.id}
+                  dish={dish}
+                  onOpenModal={handleOpenDishModal}
+                  onAddToCart={(p) => addToCart(p, 1)}
+                  onBuyNow={(p) => startDirectCheckout(p)}
+                />
+              ))}
+            </div>
 
-                <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                  <h3 className="section-title" style={{ display: 'inline-block', fontSize: '1.6rem', color: ACCENT, marginBottom: '0.6rem' }}>
-                    MÁS MODELOS Y ACCESORIOS
-                  </h3>
-                  <div style={{ width: '60px', height: '2px', backgroundColor: ACCENT, margin: '0 auto' }}></div>
-                </div>
-                
-                <div style={{ marginBottom: '4rem' }}>
-                  <ExtraGalleryCard images={extraImages} />
-                </div>
-              </div>
-            )}
-
-            <div style={{ textAlign: 'center' }}>
-              <button 
-                className="gold-pill-btn" 
-                id="ver-menu-completo"
-                type="button"
-                onClick={handleOpenCatalog}
-                style={{ padding: '0.9rem 2.8rem', fontSize: '0.85rem', letterSpacing: '0.12em', cursor: 'pointer' }}>
-                {isFullCatalogOpen ? 'OCULTAR CATÁLOGO COMPLETO' : 'VER CATÁLOGO COMPLETO'}
+            {/* Centered CTA button: VER CATÁLOGO COMPLETO */}
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2rem', marginBottom: '1.5rem' }}>
+              <button
+                onClick={() => {
+                  setSelectedCategory('Todos');
+                  setSearchQuery('');
+                  const el = document.querySelector('#menu');
+                  if (el) {
+                    const top = el.getBoundingClientRect().top + window.scrollY - 68;
+                    window.scrollTo({ top, behavior: 'smooth' });
+                  }
+                }}
+                className="gold-pill-btn"
+                style={{
+                  fontSize: '0.8rem',
+                  padding: '0.65rem 2rem',
+                  letterSpacing: '0.08em',
+                  fontWeight: 700,
+                }}
+                id="ver-catalogo-completo-btn"
+              >
+                VER CATÁLOGO COMPLETO
               </button>
             </div>
           </>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '3.5rem 1rem 4rem', color: '#9CA3AF' }}>
+            <p style={{ fontSize: '1.15rem', color: '#FFFFFF', marginBottom: '0.8rem', fontWeight: 600 }}>
+              Próximamente nuevos productos en esta categoría
+            </p>
+            <p style={{ fontSize: '0.85rem', color: '#FFFFFF', opacity: 1, marginBottom: '1.5rem' }}>
+              Estamos preparando la nueva colección. Te invitamos a explorar las demás categorías.
+            </p>
+            <button
+              onClick={() => {
+                setSelectedCategory('Todos');
+                setSearchQuery('');
+              }}
+              className="gold-pill-btn"
+              style={{ fontSize: '0.75rem', padding: '0.6rem 1.6rem' }}
+            >
+              VER TODOS LOS PRODUCTOS
+            </button>
+          </div>
         )}
       </div>
 
+      {/* Dish / Product Detail Modal */}
+      <ProductDetailModal
+        selectedDish={selectedDish}
+        onClose={() => setSelectedDish(null)}
+        modalMode={modalMode}
+      />
+
       <style>{`
-        .catalog-filter-container {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 0.6rem;
-          margin: 2.2rem auto 2.8rem;
-          padding: 0.4rem 0.5rem;
-          background: rgba(24, 31, 37, 0.85);
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          border-radius: 9999px;
-          max-width: fit-content;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
-          backdrop-filter: blur(10px);
-          transition: all 0.3s ease;
-        }
-        .catalog-filter-btn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          padding: 0.65rem 1.45rem;
-          border-radius: 9999px;
-          border: 1px solid transparent;
-          background: transparent;
-          color: rgba(255, 255, 255, 0.78);
-          font-family: 'Inter', sans-serif;
-          font-size: 0.84rem;
-          font-weight: 600;
-          letter-spacing: 0.04em;
-          cursor: pointer;
-          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-          white-space: nowrap;
-          outline: none;
-        }
-        .catalog-filter-btn:hover:not(.active) {
-          color: #ffffff;
-          background: rgba(255, 255, 255, 0.08);
-          border-color: rgba(232, 112, 8, 0.4);
-          transform: translateY(-1px);
-        }
-        .catalog-filter-btn.active {
-          background: #E87008;
-          color: #ffffff;
-          font-weight: 700;
-          border-color: #E87008;
-          box-shadow: 0 4px 18px rgba(232, 112, 8, 0.45);
-          transform: translateY(-1px);
-        }
-        @media (max-width: 680px) {
-          .catalog-filter-container {
-            border-radius: 18px !important;
-            padding: 0.45rem !important;
-            gap: 0.4rem !important;
-            width: 100% !important;
-            max-width: 440px !important;
-            flex-wrap: wrap !important;
-          }
-          .catalog-filter-btn {
-            flex: 1 1 calc(50% - 0.4rem) !important;
-            padding: 0.6rem 0.7rem !important;
-            font-size: 0.78rem !important;
-            text-align: center !important;
-          }
-        }
         @media (max-width: 960px) {
-          .menu-grid:not(.full-catalog-flex) { grid-template-columns: repeat(2, 1fr) !important; }
-          .catalog-centered-card { width: calc((100% - 1.6rem) / 2) !important; }
+          .menu-grid { grid-template-columns: repeat(2, 1fr) !important; }
         }
-        @media (max-width: 600px) {
-          .menu-grid:not(.full-catalog-flex) { grid-template-columns: 1fr !important; }
-          .catalog-centered-card { width: 100% !important; }
-        }
-        .catalog-centered-card { width: calc((100% - 3.2rem) / 3); }
-        .catalog-model-card { contain: layout paint; }
-        .catalog-image-container { contain: strict; }
-        .extra-gallery-dummy { display: none !important; }
-        @media (max-width: 768px) {
-          .extra-gallery-card { 
-            height: auto !important;
-            aspect-ratio: auto !important;
-            max-height: none !important;
-            width: 100% !important;
-            background: #0F1316 !important;
-          }
-          .extra-gallery-wrapper {
-            height: auto !important;
-          }
-          .extra-gallery-dummy {
-            display: block !important;
-          }
-          .extra-gallery-image { object-fit: contain !important; }
-        }
-        @keyframes placeholderShimmer {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
-        }
-        @keyframes modalFadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes imageFade { from { opacity: 0.5; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
+        @media (max-width: 640px) {
+          .menu-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
     </section>
