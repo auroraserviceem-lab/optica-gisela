@@ -1,40 +1,16 @@
-/* ─── Design Tokens — Hotel La Posada Logo Palette (#164928 / #EEDFCC / #0A130D) ─── */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ─── Design Tokens — Óptica Gisela Palette ─── */
 :root {
-  /* Primary accent from official La Posada logo (Deep Mountain Forest Green) */
-  --vadano-primary: #1B5230;
-  --vadano-primary-hover: #23693F;
-  --vadano-primary-light: #2D804E;
-  --vadano-primary-glow: rgba(27, 82, 48, 0.35);
-  --vadano-primary-contrast: #FAF4EC;
-
-  /* Secondary: warm sand / linen cream from logo background */
-  --vadano-secondary: #EEDFCC;
-  --vadano-secondary-hover: #DFCFB9;
-  --vadano-secondary-soft: rgba(238, 223, 204, 0.16);
-
-  /* Highlight accent */
-  --vadano-cream: #FAF4EC;
-  --vadano-cream-muted: #EEDFCC;
-
-  /* Neutrals */
-  --gold: var(--vadano-primary);
-  --gold-hover: var(--vadano-primary-hover);
-  --accent-soft: var(--vadano-secondary-soft);
-  --dark: #0A130D;
-  --dark-surface: #101F15;
-  --cream: #FAF4EC;
-  --cream-dark: #EEDFCC;
-  --gray-text: #D5DFD8;
-  --dark-accent: #0C1A11;
-
-  /* Legacy aliases (kept for backward compat) */
-  --zakura-primary: var(--vadano-primary);
-  --zakura-primary-hover: var(--vadano-primary-hover);
-  --zakura-primary-glow: var(--vadano-primary-glow);
-  --zakura-secondary: var(--vadano-secondary);
-  --zakura-secondary-soft: var(--vadano-secondary-soft);
-  --zakura-cream: var(--vadano-cream);
-  --zakura-cream-muted: var(--vadano-cream-muted);
+  --gold: #E87008;            /* Naranja Óptica Gisela — acento principal */
+  --gold-hover: #D06000;      /* Tono más intenso para hover */
+  --gold-light: #FF8526;      /* Naranja luminoso */
+  --dark: #0F1316;            /* Fondo oscuro profundo con matiz pizarra del logo */
+  --dark-card: #181F25;       /* Fondo oscuro para tarjetas */
+  --cream: #F3F5F7;           /* Fondo suave para secciones claras */
+  --cream-dark: #D4DCE2;      /* Bordes en secciones claras */
+  --gray-text: #9CA3AF;
+  --dark-accent: #1F262D;     /* Carbón pizarra para secciones claras */
 }
 
 /* ─── Base ─── */
@@ -47,19 +23,25 @@
 html {
   scroll-behavior: smooth;
   overflow-x: hidden;
-  width: 100%;
+  max-width: 100vw;
 }
 
 body {
   font-family: 'Inter', system-ui, sans-serif;
-  background-color: #0A130D;
-  color: #FAF4EC;
+  background-color: #0F1316;
+  color: #ffffff;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  max-width: 100vw;
   width: 100%;
-  -webkit-tap-highlight-color: transparent;
+  position: relative;
+}
+
+#root {
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
 }
 
 /* ─── Custom Utilities ─── */
@@ -70,8 +52,8 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  background-color: var(--vadano-primary);
-  color: #FFFFFF;
+  background-color: var(--gold);
+  color: #ffffff;
   font-family: 'Inter', sans-serif;
   font-weight: 700;
   font-size: 0.8rem;
@@ -79,21 +61,18 @@ body {
   text-transform: uppercase;
   padding: 0.55rem 1.4rem;
   border-radius: 9999px;
-  border: 1px solid var(--vadano-primary);
+  border: none;
   cursor: pointer;
-  transition: background-color 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  transition: background-color 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease;
   text-decoration: none;
   white-space: nowrap;
 }
 .gold-pill-btn:hover {
-  background-color: var(--vadano-primary-hover);
-  border-color: var(--vadano-primary-hover);
-  color: #FFFFFF;
+  background-color: var(--gold-hover);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px var(--vadano-primary-glow);
+  box-shadow: 0 6px 20px rgba(232, 112, 8, 0.4);
 }
 
-/* ─── Accent Underline ─── */
 .gold-underline {
   display: inline-block;
   position: relative;
@@ -107,82 +86,106 @@ body {
   bottom: 0;
   width: 60px;
   height: 3px;
-  background: var(--vadano-primary);
+  background-color: var(--gold);
   border-radius: 2px;
-}
-
-#historia .gold-underline::after,
-#reviews .gold-underline::after {
-  background: var(--vadano-primary) !important;
 }
 
 .section-title {
   font-family: 'Playfair Display', serif;
-  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-size: clamp(2rem, 4vw, 2.8rem);
   font-weight: 700;
-  color: #FFFFFF;
+  color: var(--gold);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin: 0;
-  text-align: center;
-  word-break: break-word;
 }
 
 /* ─── Section Subtitle / Bio ─── */
 .section-subtitle {
   font-family: 'Playfair Display', serif;
-  font-size: clamp(0.92rem, 1.5vw, 1.15rem);
+  font-size: clamp(1rem, 1.5vw, 1.15rem);
   font-weight: 400;
   font-style: italic;
-  color: #FFFFFF;
+  color: var(--gold);
   line-height: 1.8;
-  max-width: 650px;
+  max-width: 600px;
   margin: 1.5rem auto 0;
   text-align: center;
-  padding: 0 0.5rem;
 }
 
-/* ─── Scrollbar — VADANO gold thumb ─── */
+/* ─── Scrollbar ─── */
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #000000; }
+::-webkit-scrollbar-track { background: #0F1316; }
 ::-webkit-scrollbar-thumb {
-  background: var(--vadano-primary);
+  background: var(--gold);
   border-radius: 4px;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: var(--vadano-secondary);
+
+/* ─── Hero Scroll Indicator ─── */
+.hero-scroll {
+  position: absolute;
+  bottom: 2rem;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  width: max-content;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 6px;
+  z-index: 3;
+  pointer-events: none;
+  animation: fadeUp 1s 0.7s ease both;
 }
 
-/* ─── Rendering Performance & Web Vitals Optimization ─── */
-#historia, #experiencia, #reviews, #contacto {
-  contain-intrinsic-size: 1px 600px;
+.hero-scroll span {
+  text-indent: 0.25em;
+  text-align: center;
+  display: block;
 }
 
-img, video {
-  max-width: 100%;
-  height: auto;
-}
-
-/* ─── Mobile Portrait Layout Protection ─── */
-@media (max-width: 840px) {
-  body {
-    padding-bottom: 64px;
+@media (max-height: 600px) {
+  .hero-scroll {
+    display: none !important;
   }
 }
 
-@media (max-width: 480px) {
-  .section-title {
-    font-size: 1.65rem !important;
-    letter-spacing: 0.04em !important;
-  }
-  .section-subtitle {
-    font-size: 0.88rem !important;
-    line-height: 1.6 !important;
-    margin-top: 1rem !important;
-  }
-  .gold-pill-btn {
-    font-size: 0.74rem !important;
-    padding: 0.5rem 1.15rem !important;
-  }
+/* ─── Mobile Menu ─── */
+.mobile-menu {
+  background-color: #0F1316 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
 }
+
+.mobile-nav-link {
+  font-family: 'Inter', system-ui, sans-serif !important;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.1em !important;
+  text-transform: uppercase !important;
+  background-color: var(--gold) !important;
+  color: #ffffff !important;
+  text-align: center !important;
+  padding: 0.7rem 1.4rem !important;
+  width: 100% !important;
+  max-width: 300px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 9999px !important;
+  text-decoration: none !important;
+  border: none !important;
+  transition: background-color 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease !important;
+}
+
+.mobile-nav-link:hover,
+.mobile-nav-link:active {
+  background-color: var(--gold-hover) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 20px rgba(232, 112, 8, 0.4) !important;
+}
+
 

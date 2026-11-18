@@ -22,9 +22,3 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
-# Scratch & temporary scripts
-*.py
-*.cjs
-replace_*.js
-temp_images/
