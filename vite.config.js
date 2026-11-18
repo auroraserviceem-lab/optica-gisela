@@ -5,20 +5,15 @@ export default defineConfig({
   plugins: [
     react(),
   ],
-  server: {
-    watch: {
-      ignored: ['**/dist/**', '**/.git/**'],
-    },
-  },
   build: {
     target: 'esnext',
-    cssCodeSplit: true,
-    chunkSizeWarningLimit: 600,
+    minify: 'esbuild',
+    cssMinify: true,
     rollupOptions: {
       output: {
         manualChunks: {
-          'vendor-react': ['react', 'react-dom'],
-          'vendor-icons': ['lucide-react'],
+          vendor: ['react', 'react-dom'],
+          icons: ['lucide-react'],
         },
       },
     },
